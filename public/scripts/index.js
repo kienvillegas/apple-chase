@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function () {
       editUsernameContainer.style.display = "none";
       deleteAccountContainer.style.display = "none";
     }
-
+    editUsername.value = "";
     editUsername.textContent = "";
     editUsernameHelp.textContent = "";
     editUsernameHelp.classList.remove("text-danger", "is-invalid");
@@ -269,6 +269,15 @@ document.addEventListener("DOMContentLoaded", function () {
   async function validateUsername() {
     const editUsername = document.getElementById("editUsername").value.trim();
     const editUsernameHelp = document.getElementById("editUsernameHelp");
+
+    // Ignore validation if editUsername is empty or contains only spaces
+    if (editUsername === "" || /^\s*$/.test(editUsername)) {
+      // Reset previous error styles and messages
+      editUsernameHelp.textContent = "";
+      editUsernameHelp.classList.remove("text-danger", "is-invalid");
+
+      return false; // Validation succeeded
+    }
 
     if (editUsername.length < 5) {
       // Username is less than 5 characters, show error and update styles

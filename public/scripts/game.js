@@ -50,6 +50,12 @@ document.addEventListener("DOMContentLoaded", function () {
       playBackgroundMusic();
     }
   });
+
+  document.addEventListener("click", () => {
+    if (!isMuted && !isPaused) {
+      playBackgroundMusic();
+    }
+  });
   btnPause.addEventListener("click", togglePause);
   btnMute.addEventListener("click", toggleMute);
   btnExit.addEventListener("click", exit);
@@ -547,7 +553,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Wrap around the canvas after updating the apple's position
-    wrapAroundCanvas(apple);
+    // wrapAroundCanvas(apple);
   }
 
   function wrapAroundCanvas(object) {
@@ -569,17 +575,16 @@ document.addEventListener("DOMContentLoaded", function () {
     let newAppleX = apple.x + dx;
     let newAppleY = apple.y + dy;
 
-    // Wrap around the canvas if it goes beyond the boundaries
-    if (newAppleX < 0) {
-      newAppleX = canvas.width - apple.size;
-    } else if (newAppleX + apple.size > canvas.width) {
-      newAppleX = 0;
-    }
-
-    if (newAppleY < 0) {
-      newAppleY = canvas.height - apple.size;
-    } else if (newAppleY + apple.size > canvas.height) {
-      newAppleY = 0;
+    // Ensure that the new position is within the canvas boundaries
+    if (
+      newAppleX < 0 ||
+      newAppleX + apple.size > canvas.width ||
+      newAppleY < 0 ||
+      newAppleY + apple.size > canvas.height
+    ) {
+      // The apple is attempting to move outside the canvas boundaries
+      playCollisionSound();
+      return; // Do not update the apple's position
     }
 
     // Ensure that the new position is aligned with the grid
@@ -852,8 +857,9 @@ document.addEventListener("DOMContentLoaded", function () {
     gameOverScore.textContent = currentScore;
     gameOverDifficulty.textContent = difficulty;
     gameOverTime.textContent = timeLength;
-    gameOverModal.show();
-
+    setTimeout(() => {
+      gameOverModal.show();
+    }, 3000);
     submitScore(difficulty, currentScore, timeLength);
 
     btnMainMenu.addEventListener("click", function () {
