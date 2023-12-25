@@ -1,0 +1,23 @@
+# Ignore .env files
+.env
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore logs and generated files
+logs/
+*.log
+*.log.*
+*.tmp
+*.pid
+*.seed
+*.pid.lock
+
+# Ignore Visual Studio Code settings
+.vscode/
+
+# Ignore local configuration files
+*.config.local.js
+
+# Ignore npm debug log
+npm-debug.log*
