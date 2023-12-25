@@ -124,14 +124,31 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   function handleDifficultyChange() {
+    playAudio("selectDifficulty");
     toggleSpinner(true);
     const selectedDifficulty = difficultySelect.value;
-    playAudio("selectDifficulty");
     fetchLeaderboardData(selectedDifficulty);
   }
-
   function fetchLeaderboardData(difficulty) {
     toggleSpinner(true);
+
+    // Clear existing table rows
+    tableBody.innerHTML = "";
+
+    if (!difficulty) {
+      // If difficulty is not selected, show a message
+      const row = tableBody.insertRow(0);
+      const cell = row.insertCell(0);
+      cell.colSpan = 5; // Set colspan to cover all columns
+      cell.classList.add("text-center", "py-3", "display-4"); // Bootstrap classes for centering, padding, and larger text
+      cell.style.fontStyle = "italic"; // Optional: Make the message italic
+      cell.textContent = "Please select a difficulty."; // Your message here
+
+      toggleSpinner(false);
+      return;
+    }
+
+    // Continue fetching leaderboard data
     setTimeout(function () {
       toggleSpinner(false);
       fetch(`/leaderboard/${difficulty}`)
@@ -142,6 +159,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           if (data.success) {
             toggleSpinner(false);
             populateTable(data.leaderboard);
+            checkLoggedIn();
           } else {
             toggleSpinner(false);
             console.error("Error fetching leaderboard data:", data.error);
@@ -161,23 +179,33 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Clear existing table rows
     tableBody.innerHTML = "";
 
-    // Populate the table with the received data
-    leaderboardData.forEach((entry, index) => {
-      const row = tableBody.insertRow(index);
-      const cells = [
-        row.insertCell(0),
-        row.insertCell(1),
-        row.insertCell(2),
-        row.insertCell(3),
-        row.insertCell(4),
-      ];
+    if (leaderboardData.length === 0) {
+      // If there is no data, display a centered message
+      const row = tableBody.insertRow(0);
+      const cell = row.insertCell(0);
+      cell.colSpan = 5; // Set colspan to cover all columns
+      cell.classList.add("text-center", "py-3", "display-4"); // Bootstrap classes for centering, padding, and larger text
+      cell.style.fontStyle = "italic"; // Optional: Make the message italic
+      cell.textContent = "Be the first one to reach the top!"; // Your message here
+    } else {
+      // Populate the table with the received data
+      leaderboardData.forEach((entry, index) => {
+        const row = tableBody.insertRow(index);
+        const cells = [
+          row.insertCell(0),
+          row.insertCell(1),
+          row.insertCell(2),
+          row.insertCell(3),
+          row.insertCell(4),
+        ];
 
-      cells[0].textContent = index + 1;
-      cells[1].textContent = entry.userId.username; // Access username within userId
-      cells[2].textContent = entry.score;
-      cells[3].textContent = formatTime(entry.timeLength); // Use formatted time
-      cells[4].textContent = entry.difficulty;
-    });
+        cells[0].textContent = index + 1;
+        cells[1].textContent = entry.userId.username; // Access username within userId
+        cells[2].textContent = entry.score;
+        cells[3].textContent = formatTime(entry.timeLength); // Use formatted time
+        cells[4].textContent = entry.difficulty;
+      });
+    }
   }
 
   function playAudio(audioName) {
@@ -206,6 +234,41 @@ document.addEventListener("DOMContentLoaded", async function () {
       spinner.style.display = "block";
     } else {
       spinner.style.display = "none";
+    }
+  }
+
+  async function checkLoggedIn() {
+    fetch("/check-login-status")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // If the user is logged in, highlight their score in the leaderboard
+          highlightLoggedInUserScore(data.user.username);
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking login status:", error);
+      });
+  }
+
+  function highlightLoggedInUserScore(loggedInUsername) {
+    console.log("Highlighting for:", loggedInUsername);
+
+    const rows = tableBody.getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+      console.log("HEloo");
+      const cells = rows[i].getElementsByTagName("td");
+      const usernameCell = cells[1];
+
+      if (usernameCell) {
+        console.log("Username in row", i, ":", usernameCell.textContent);
+        if (usernameCell.textContent === loggedInUsername) {
+          console.log("Highlighting row:", i);
+          rows[i].classList.add("table-active"); // Adjust the class based on your styling
+          break;
+        }
+      }
     }
   }
 });

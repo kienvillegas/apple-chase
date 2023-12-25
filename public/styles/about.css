@@ -10,15 +10,15 @@ body {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
+/* 
 h2 {
   color: #ffc107;
-}
+} */
 
 p {
   color: #fff;
 }
-
+/* 
 .btn-primary {
   background-color: #ffc107;
   border-color: #ffc107;
@@ -27,7 +27,7 @@ p {
 .btn-primary:hover {
   background-color: #ffca2b;
   border-color: #ffca2b;
-}
+} */
 nav {
   background-color: #343a40;
   padding: 15px 0;

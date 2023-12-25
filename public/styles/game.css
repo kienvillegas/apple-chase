@@ -28,14 +28,6 @@ canvas {
   color: #ffffff; /* White text color */
 }
 
-.btn-primary:hover,
-.btn-danger:hover,
-.btn-secondary:hover,
-.btn-success:hover {
-  background-color: #0056b3; /* Slightly darker blue on hover */
-  border-color: #0056b3;
-}
-
 .modal-content {
   background-color: #343a40; /* Dark modal background color */
   color: #ffffff; /* White text color */

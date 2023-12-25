@@ -219,8 +219,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function cancelExit() {
     playClickSound();
-
-    exitConfirmationModal.hide();
   }
 
   function confirmExit() {
@@ -278,7 +276,6 @@ document.addEventListener("DOMContentLoaded", function () {
       render();
     } else {
       playBackgroundMusic();
-      playWormMovementSound();
 
       btnPause.innerHTML = pauseIconPath;
       worm.speed = pausedSpeed;
@@ -858,30 +855,6 @@ document.addEventListener("DOMContentLoaded", function () {
     gameOverModal.show();
 
     submitScore(difficulty, currentScore, timeLength);
-    clearInterval(timerInterval);
-
-    immunityTime = IMMUNITY_TIME;
-    isImmune = true;
-    path = [];
-    worm.speed = DEFAULT_WORM_SPEED; // Set it to your default speed value
-    worm = null; // Reset or reinitialize worm
-    wormBody = [];
-    apple = null; // Reset or reinitialize apple
-    obstacles = [];
-    immunityTime = IMMUNITY_TIME;
-    isImmune = true;
-    isGameOver = false;
-    lastPathCalculationTime = 0;
-    isPaused = false;
-    isPageVisible = true;
-    displayStatusText = false;
-    lastFrameTime = null;
-    currentTime = 0;
-    frameCount = 0;
-    score = 0;
-
-    initializeGameObjects();
-    initializeObstacles();
 
     btnMainMenu.addEventListener("click", function () {
       playClickSound();
@@ -890,20 +863,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     btnPlayAgain.addEventListener("click", function () {
-      playClickSound();
-      gameOverModal.hide();
-      loadingOverlay.style.display = "flex";
-
-      startTimer();
-      hideLoadingScreen();
+      location.reload();
     });
   }
 
   function submitScore(difficulty, score, timeLength) {
-    // Get the user's role from the URL
     const userRole = getRoleFromUrl();
 
-    // Make sure the user's role is valid
     if (userRole === null) {
       console.error("Player is guest, cannot submit score");
       return;

@@ -82,3 +82,8 @@ nav a:hover {
 nav {
   z-index: 1000; /* Set a high z-index to ensure the navigation bar is on top */
 }
+
+.table-highlight {
+  background-color: #28a745; /* Green background color for highlighted rows */
+  color: #ffffff; /* White text color for highlighted rows */
+}

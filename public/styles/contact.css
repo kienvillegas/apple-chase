@@ -19,7 +19,7 @@ body {
   position: relative; /* Set position to relative */
   min-height: 300px; /* Set a minimum height for the container */
 }
-
+/* 
 label {
   color: #ffc107;
 }
@@ -38,7 +38,7 @@ label {
 .btn-primary:hover {
   background-color: #ffca2b;
   border-color: #ffca2b;
-}
+} */
 
 #submit-status {
   position: absolute;

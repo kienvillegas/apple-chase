@@ -12,6 +12,19 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnSettings = document.getElementById("btnSettings");
   const btnSignInSubmit = document.getElementById("btnSignInSubmit");
   const btnSignUpSubmit = document.getElementById("btnSignUpSubmit");
+  const btnDeleteAccount = document.getElementById("btnDeleteAccount");
+  const deleteLoading = document.getElementById("deleteLoading");
+  const canceDeleteBtn = document.getElementById("canceDeleteBtn");
+  const closeSettings = document.getElementById("closeSettings");
+  const editUsernameContainer = document.getElementById(
+    "editUsernameContainer"
+  );
+  const deleteAccountContainer = document.getElementById(
+    "deleteAccountContainer"
+  );
+  const deleteConfirmationModal = new bootstrap.Modal(
+    document.getElementById("deleteConfirmationModal")
+  );
   const logoutConfirmationModal = new bootstrap.Modal(
     document.getElementById("logoutConfirmationModal")
   );
@@ -59,6 +72,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const signInLoading = document.getElementById("signInLoading");
   const signUpLoading = document.getElementById("signUpLoading");
   const logOutLoadng = document.getElementById("logOutLoadng");
+  const deleteConfirmInput = document.getElementById("deleteConfirmInput");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  const confirmDeleteHelp = document.getElementById("confirmDeleteHelp");
+  const saveLoading = document.getElementById("saveLoading");
+  const usernamePlaceholder = document.getElementById("usernamePlaceholder");
 
   let currentSlideIndex = 0;
 
@@ -75,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.addEventListener("click", function clickHandler() {
+    checkLoggedIn();
     playBackgroundMusic();
     document.removeEventListener("click", clickHandler);
   });
@@ -131,6 +150,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   btnSettings.addEventListener("click", function () {
     playButtonClickSound();
+
+    if (checkLoggedIn) {
+      editUsernameContainer.style.display = "show";
+      deleteAccountContainer.style.display = "show";
+    } else {
+      editUsernameContainer.style.display = "none";
+      deleteAccountContainer.style.display = "none";
+    }
+
+    editUsername.textContent = "";
+    editUsernameHelp.textContent = "";
+    editUsernameHelp.classList.remove("text-danger", "is-invalid");
     settingsModal.show();
   });
 
@@ -159,10 +190,130 @@ document.addEventListener("DOMContentLoaded", function () {
       togglePasswordVisibility("confirmPassword", "showConfirmPasswordSignUp");
     });
 
+  btnDeleteAccount.addEventListener("click", function () {
+    settingsModal.hide();
+    deleteConfirmationModal.show();
+    deleteConfirmInput.value = ""; // Clear the input field
+    confirmDeleteHelp.textContent = ""; // Clear any previous error messages
+    confirmDeleteHelp.classList.remove("text-danger", "is-invalid"); // Remove Bootstrap classe
+  });
+
+  confirmDeleteBtn.addEventListener("click", function () {
+    toggleDeleteLoading(true);
+    const confirmationText = "CONFIRM";
+
+    setTimeout(() => {
+      if (deleteConfirmInput.value.trim() === confirmationText) {
+        // Make a request to the server to delete the account
+        fetch("/delete-account", {
+          method: "DELETE",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              location.reload();
+            } else {
+              // Display a generic error message in the deleteAccountHelp element with Bootstrap classes
+              confirmDeleteHelp.textContent =
+                data.error || "Failed to delete account. Please try again.";
+              confirmDeleteHelp.classList.add("text-danger", "is-invalid");
+            }
+          })
+          .catch((error) => {
+            console.error("Error deleting account:", error);
+            // Display a generic error message in the deleteAccountHelp element with Bootstrap classes
+            confirmDeleteHelp.textContent =
+              "An error occurred while deleting the account.";
+            confirmDeleteHelp.classList.add("text-danger", "is-invalid");
+          });
+      } else {
+        // Display a specific error message for incorrect confirmation with Bootstrap classes
+        confirmDeleteHelp.textContent =
+          'Invalid confirmation. Please type "CONFIRM" to proceed.';
+        confirmDeleteHelp.classList.add("text-danger", "is-invalid");
+        toggleDeleteLoading(false); // Hide the modal in case of an error
+      }
+    }, 3000);
+  });
+
+  // Event listener for closing the deletion confirmation modal
+  deleteConfirmationModal._element.addEventListener(
+    "hidden.bs.modal",
+    function () {
+      deleteConfirmInput.value = ""; // Clear the input field
+      confirmDeleteHelp.textContent = ""; // Clear any previous error messages
+      confirmDeleteHelp.classList.remove("text-danger", "is-invalid"); // Remove Bootstrap classes
+    }
+  );
+
+  deleteConfirmationModal._element.addEventListener(
+    "show.bs.modal",
+    function () {
+      deleteConfirmInput.value = "";
+      deleteConfirmHelp.textContent = "";
+      deleteConfirmHelp.classList.remove("text-danger", "is-invalid");
+    }
+  );
+
   btnSaveSettings.addEventListener("click", function () {
     playButtonClickSound();
-    saveSettings();
+
+    toggleSaveLoading(true);
+    // Validate the username
+    if (validateUsername()) {
+      saveSettings();
+    }
   });
+
+  // Function to validate the editUsername
+  async function validateUsername() {
+    const editUsername = document.getElementById("editUsername").value.trim();
+    const editUsernameHelp = document.getElementById("editUsernameHelp");
+
+    if (editUsername.length < 5) {
+      // Username is less than 5 characters, show error and update styles
+      editUsernameHelp.textContent =
+        "Username must be at least 5 characters long";
+      editUsernameHelp.classList.add("text-danger", "is-invalid");
+      return false; // Validation failed
+    }
+
+    // Reset previous error styles and messages
+    editUsernameHelp.textContent = "";
+    editUsernameHelp.classList.remove("text-danger", "is-invalid");
+
+    // Check if the new username is unique
+    const isUnique = await checkUniqueUsername(editUsername);
+
+    if (!isUnique) {
+      // Username is not unique, show error and update styles
+      editUsernameHelp.textContent = "Username is already taken";
+      editUsernameHelp.classList.add("text-danger", "is-invalid");
+      return false; // Validation failed
+    }
+
+    return true; // Validation succeeded
+  }
+
+  // Function to check if the new username is unique
+  async function checkUniqueUsername(newUsername) {
+    try {
+      const response = await fetch("/check-username", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ newUsername }),
+      });
+
+      const data = await response.json();
+
+      return data.success;
+    } catch (error) {
+      console.error("Error checking username uniqueness:", error);
+      return false; // Assume non-unique in case of an error
+    }
+  }
 
   difficultySelect.addEventListener("change", function () {
     playSelectDifficultySound();
@@ -258,9 +409,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   getAndDisplayVolume();
 
-  function saveSettings() {
+  // Modify the saveSettings function to check if the username is validated// Modify the saveSettings function to check if the username is validated
+  async function saveSettings() {
     const volumeValue = Number(volumeControl.value); // Convert to number without normalizing
     saveVolumeToLocalStorage(volumeValue); // Save to localStorage
+
+    // Validate the username
+    const isUsernameValid = await validateUsername();
+    const saveSettingsUrl = "/save-settings";
+    const updateVolumeUrl = "/update-volume";
 
     // Check if the user is logged in
     fetch("/check-login-status")
@@ -268,36 +425,46 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((data) => {
         if (data.success) {
           // User is logged in, proceed with saving settings to the server
-          const saveSettingsUrl = "/save-settings";
-
           const requestOptions = {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              volume: volumeValue /*, other settings... */,
+              username: isUsernameValid ? editUsername.value : null, // Pass the username if it's valid
+              volume: volumeValue ? volumeValue : 1 /*, other settings... */,
             }),
           };
 
-          fetch(saveSettingsUrl, requestOptions)
+          // Choose the appropriate route based on username validation
+          const targetUrl = isUsernameValid ? saveSettingsUrl : updateVolumeUrl;
+
+          fetch(targetUrl, requestOptions)
             .then((response) => response.json())
             .then((data) => {
               if (data.success) {
-                displaySettingsMessage(
-                  "Settings saved successfully",
-                  "success"
-                );
+                toggleSaveLoading(false);
+
+                // Modify the success message based on the target URL
+                const successMessage =
+                  targetUrl === saveSettingsUrl
+                    ? "Settings saved successfully"
+                    : "Volume setting saved successfully";
+
+                displaySettingsMessage(successMessage, "success");
               } else {
+                toggleSaveLoading(false);
                 displaySettingsMessage("Error saving settings", "danger");
                 console.error("Error saving settings:", data.error);
               }
             })
             .catch((error) => {
+              toggleSaveLoading(false);
               displaySettingsMessage("Error saving settings", "danger");
               console.error("Error saving settings:", error);
             });
         } else {
+          toggleSaveLoading(false);
           // User is not logged in, no need to save settings to the server
           console.warn("User is not logged in. Settings not saved to server.");
           displaySettingsMessage(
@@ -494,9 +661,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Invalid response format during logout");
     }
   }
-
   function checkLoggedIn() {
     const btnSignout = document.getElementById("btnSignout"); // Make sure to use the correct ID
+    const usernameContainer = document.getElementById("usernameContainer");
 
     fetch("/check-login-status")
       .then((response) => response.json())
@@ -512,6 +679,19 @@ document.addEventListener("DOMContentLoaded", function () {
           btnSignout.style.display = "block";
           btnStartGame.style.display = "block";
           btnPlayAsGuest.style.display = "none";
+          editUsernameContainer.style.display = "block";
+          deleteAccountContainer.style.display = "block";
+
+          // Display the username
+          if (usernameContainer) {
+            if (usernamePlaceholder) {
+              usernamePlaceholder.textContent = data.user.username
+                ? data.user.username
+                : "Player";
+            }
+            usernameContainer.style.display = "block";
+          }
+
           // If the user is authenticated, get and display the volume from the server
           getAndDisplayVolume();
         } else {
@@ -525,6 +705,16 @@ document.addEventListener("DOMContentLoaded", function () {
           btnSignout.style.display = "none";
           btnStartGame.style.display = "none";
           btnPlayAsGuest.style.display = "block";
+          editUsernameContainer.style.display = "none";
+          deleteAccountContainer.style.display = "none";
+
+          // Display the username
+          if (usernameContainer) {
+            if (usernamePlaceholder) {
+              usernamePlaceholder.textContent = "Player";
+            }
+            usernameContainer.style.display = "block";
+          }
 
           // Use the volume from localStorage if the user is not authenticated
           const storedVolume = getVolumeFromLocalStorage();
@@ -715,7 +905,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Continue with the existing logic for form submission
       sendRequest("/sign-in", "POST", { username, password }, closeSignInModal);
-    }, 5000); // Simulated delay of 2 seconds, replace with your actual form submission logic
+    }, 3000); // Simulated delay of 2 seconds, replace with your actual form submission logic
   });
 
   signUpForm.addEventListener("submit", function (event) {
@@ -831,40 +1021,60 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   function toggleSignInLoading(isLoading) {
-    if (signInLoading) {
-      if (isLoading) {
-        signInLoading.style.display = "inline-block";
-        btnSignInSubmit.style.display = "none";
-      } else {
-        signInLoading.style.display = "none";
-        btnSignInSubmit.style.display = "block";
-      }
+    if (isLoading) {
+      signInLoading.style.display = "inline-block";
+      btnSignInSubmit.style.display = "none";
+    } else {
+      signInLoading.style.display = "none";
+      btnSignInSubmit.style.display = "block";
     }
   }
 
   function toggleSignUpLoading(isLoading) {
-    if (signInLoading) {
-      if (isLoading) {
-        signUpLoading.style.display = "inline-block";
-        btnSignUpSubmit.style.display = "none";
-      } else {
-        signUpLoading.style.display = "none";
-        btnSignUpSubmit.style.display = "block";
-      }
+    if (isLoading) {
+      signUpLoading.style.display = "inline-block";
+      btnSignUpSubmit.style.display = "none";
+    } else {
+      signUpLoading.style.display = "none";
+      btnSignUpSubmit.style.display = "block";
     }
   }
 
   function toggleLogOutLoading(isLoading) {
+    if (isLoading) {
+      logOutLoading.style.display = "inline-block";
+      btnCancelLogout.style.display = "none";
+      btnConfirmLogout.style.display = "none";
+    } else {
+      logOutLoadng.style.display = "none";
+      btnCancelLogout.style.display = "block";
+      btnConfirmLogout.style.display = "block";
+    }
+  }
+
+  function toggleDeleteLoading(isLoading) {
     if (signInLoading) {
       if (isLoading) {
-        logOutLoading.style.display = "inline-block";
-        btnCancelLogout.style.display = "none";
-        btnConfirmLogout.style.display = "none";
+        deleteLoading.style.display = "inline-block";
+        confirmDeleteBtn.style.display = "none";
+        canceDeleteBtn.style.display = "none";
       } else {
-        logOutLoadng.style.display = "none";
-        btnCancelLogout.style.display = "block";
-        btnConfirmLogout.style.display = "block";
+        deleteLoading.style.display = "none";
+        confirmDeleteBtn.style.display = "block";
+        canceDeleteBtn.style.display = "block";
       }
+    }
+  }
+
+  function toggleSaveLoading(isLoading) {
+    if (isLoading) {
+      saveLoading.style.display = "inline-block";
+      btnSaveSettings.style.display = "none";
+      closeSettings.style.display = "none";
+    } else {
+      saveLoading.style.display = "none";
+      btnSaveSettings.style.display = "block";
+      closeSettings.style.display = "block";
     }
   }
 });

@@ -394,15 +394,7 @@ app.post("/save-settings", isAuthenticated, async (req, res) => {
     // Use the userId from the authenticated user
     const userId = req.user._id;
 
-    const { volume /* other settings... */ } = req.body;
-
-    // Validate the incoming data as needed
-    if (typeof volume !== "number" || volume < 1 || volume > 100) {
-      console.log("Invalid data format");
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid data format" });
-    }
+    const { username, volume /* other settings... */ } = req.body;
 
     const user = await User.findById(userId);
 
@@ -413,6 +405,11 @@ app.post("/save-settings", isAuthenticated, async (req, res) => {
 
     // Process and save volume data
     user.volume = volume;
+
+    // If username is provided, update the username
+    if (username !== null) {
+      user.username = username;
+    }
 
     await user.save();
 
@@ -443,6 +440,93 @@ app.get("/get-volume", isAuthenticated, async (req, res) => {
   } catch (error) {
     console.error("Error fetching user volume:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
+
+// Check Username Route
+app.post("/check-username", isAuthenticated, async (req, res) => {
+  const { newUsername } = req.body;
+
+  try {
+    // Check if the new username is unique
+    const existingUser = await User.findOne({ username: newUsername });
+
+    if (existingUser) {
+      console.error("Username is already taken");
+      return res
+        .status(400)
+        .json({ success: false, error: "Username is already taken" });
+    }
+
+    // If the username is unique, send success response
+    res.status(200).json({ success: true, message: "Username is unique" });
+  } catch (error) {
+    console.error("Error checking username uniqueness: ", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
+
+// Delete Account Route
+app.delete("/delete-account", isAuthenticated, async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    // Find and delete the user by ID
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      console.error("User not found");
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    // Optionally, you might want to perform additional cleanup or logging here
+
+    res
+      .status(200)
+      .json({ success: true, message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting account: ", error);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
+
+// Update Volume Route
+app.post("/update-volume", isAuthenticated, async (req, res) => {
+  console.log("Received update-volume request:", req.body);
+
+  try {
+    // Use the userId from the authenticated user
+    const userId = req.user._id;
+
+    const { volume } = req.body;
+
+    // Validate the incoming volume data as needed
+    if (typeof volume !== "number" || volume < 1 || volume > 100) {
+      console.log("Invalid volume format");
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid volume format" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      console.log("User not found");
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    // Process and save volume data
+    user.volume = volume;
+
+    await user.save();
+
+    console.log("Volume setting updated successfully");
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating volume setting to the database:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
   }
 });
 
