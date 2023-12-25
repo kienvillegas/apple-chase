@@ -5,12 +5,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const OBSTACLE_SIZE = 30;
   const NUM_OBSTACLES = 100;
   const IMMUNITY_TIME = 10;
-  const PATH_RECALCULATION_INTERVAL = 60;
   const DEFAULT_WORM_SPEED = 1;
-  const DEFAULT_RECALCULATION_INTERVAL = 120; // Default interval in frames
+  const DEFAULT_RECALCULATION_INTERVAL = 120;
+  const SCORE_UPDATE_INTERVAL = 1;
 
   // Variables
-  let canvas, ctx, apple, worm, wormBody, timer, btnPause;
+  let canvas, ctx, apple, worm, wormBody, timer;
   let obstacles = [];
   let immunityTime = IMMUNITY_TIME;
   let isImmune = true;
@@ -18,16 +18,167 @@ document.addEventListener("DOMContentLoaded", function () {
   let isGameOver = false;
   let currentTime = 0;
   let isPaused = false;
-  let isPageVisible = true;
   let displayStatusText = false;
-  let lastFrameTime; // Declare lastFrameTime at a higher scope
+  let lastFrameTime;
   let score = 0;
-  let difficulty = selectedDifficulty;
   let recalculationInterval = DEFAULT_RECALCULATION_INTERVAL;
+  let scoreIncrementPerSecond = 1;
+  let lastScoreUpdateTime = 0;
+  let isMuted = false;
 
-  btnPause = document.getElementById("btnPause");
+  const exitConfirmationModal = new bootstrap.Modal(
+    document.getElementById("exitConfirmationModal")
+  );
+  const gameOverModal = new bootstrap.Modal(
+    document.getElementById("gameOverModal")
+  );
+  const btnCancelExit = document.getElementById("btnCancelExit");
+  const btnConfirmExit = document.getElementById("btnConfirmExit");
+  const btnMute = document.getElementById("btnMute");
+  const btnPause = document.getElementById("btnPause");
+  const btnExit = document.getElementById("btnExit");
+  const backgroundMusic = new Audio("/audio/background_music_2.mp3");
+  const clickMusic = new Audio("/audio/click1.ogg");
+  const collisionMusic = new Audio("/audio/collision_obstacle.ogg");
+  const wormMovementMusic = new Audio("/audio/worm_movement.mp3");
+  const gameOverMusic = new Audio("/audio/game_over_music.mp3");
+  const tapMusic = new Audio("/audio/tap_sound.mp3");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+
+  document.addEventListener("keydown", () => {
+    if (!isMuted && !isPaused) {
+      playBackgroundMusic();
+    }
+  });
   btnPause.addEventListener("click", togglePause);
+  btnMute.addEventListener("click", toggleMute);
+  btnExit.addEventListener("click", exit);
+  btnCancelExit.addEventListener("click", cancelExit);
+  btnConfirmExit.addEventListener("click", confirmExit);
   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  let validDifficulties = ["easy", "medium", "hard"];
+  const selectedDifficulty = getQueryParam();
+
+  if (validDifficulties.includes(selectedDifficulty)) {
+    console.log(`Valid difficulty: ${selectedDifficulty}`);
+    adjustRecalculationInterval(selectedDifficulty);
+  } else {
+    console.log(`Not valid difficulty: ${selectedDifficulty}`);
+    adjustRecalculationInterval("easy");
+  }
+  async function isLoggedIn() {
+    try {
+      const userRole = await getRoleFromUrl();
+
+      if (userRole === "guest") {
+        return; // No further action needed for guest users
+      }
+
+      const response = await fetch("/check-login-status");
+      const data = await response.json();
+
+      if (data.success) {
+        console.log("User is logged in");
+      } else {
+        console.log("User is not logged in, redirecting to the home page");
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Error checking login status:", error);
+    }
+  }
+
+  function hideLoadingScreen() {
+    loadingOverlay.style.display = "none";
+  }
+  function playBackgroundMusic() {
+    if (getRoleFromUrl() === "guest") {
+      // Assuming backgroundMusic is a pre-defined audio element
+      const userVolume = localStorage.getItem("userVolume");
+
+      // Set the volume based on the user's stored preference or default to 100%
+      backgroundMusic.volume = userVolume
+        ? Math.min(1, Math.max(0, parseFloat(userVolume) / 100))
+        : 1;
+
+      // Check if the audio is not muted before playing
+      if (!isMuted && !isPaused) {
+        backgroundMusic.play();
+      }
+    } else if (getRoleFromUrl() === "registered") {
+      // Make a request to get the volume for registered users
+      fetch("/get-volume")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          // Assuming the server returns the volume in the 'volume' field
+          const serverVolume = data.volume;
+
+          // Use the received volume data for registered users
+          console.log("Registered User Volume:", serverVolume);
+
+          // Set the volume of backgroundMusic based on the server response
+          backgroundMusic.volume = Math.min(
+            1,
+            Math.max(0, parseFloat(serverVolume) / 100)
+          );
+        })
+        .catch((error) => {
+          console.error(
+            "Error fetching volume for registered user:",
+            error.message
+          );
+        });
+    }
+
+    // Check if the audio is not muted before playing
+    if (!isMuted) {
+      backgroundMusic.play();
+    }
+  }
+
+  function playClickSound() {
+    if (!isMuted) {
+      clickMusic.play();
+    }
+  }
+
+  function playCollisionSound() {
+    if (!isMuted) {
+      collisionMusic.play();
+    }
+  }
+
+  function playWormMovementSound() {
+    if (!isMuted) {
+      wormMovementMusic.play();
+    }
+  }
+
+  function playGameOverMusic() {
+    if (!isMuted) {
+      gameOverMusic.play();
+    }
+  }
+
+  function playTapSound() {
+    if (!isMuted) {
+      tapMusic.play();
+    }
+  }
+
+  function resetVolume() {
+    clickMusic.volume = 100;
+    tapMusic.volume = 100;
+    wormMovementMusic.volume = 100;
+    collisionMusic.volume = 100;
+    gameOverMusic.volume = 100;
+  }
 
   function adjustRecalculationInterval(difficulty) {
     switch (difficulty) {
@@ -40,7 +191,6 @@ document.addEventListener("DOMContentLoaded", function () {
       case "hard":
         recalculationInterval = Math.floor(DEFAULT_RECALCULATION_INTERVAL / 2); // Example: Halve the interval for hard
         break;
-      // Add more cases as needed
     }
     console.log(
       `Recalculation Interval adjusted for ${difficulty} difficulty: ${recalculationInterval}`
@@ -52,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Page is hidden, pause the game
       if (!isPaused && !isGameOver) {
         togglePause();
+        backgroundMusic.pause();
         console.log("Game Paused");
       }
     } else {
@@ -59,61 +210,144 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Game is paused. Press the 'Resume' button to continue.");
     }
   }
+  function exit() {
+    playClickSound();
+    togglePause();
+
+    exitConfirmationModal.show();
+  }
+
+  function cancelExit() {
+    playClickSound();
+
+    exitConfirmationModal.hide();
+  }
+
+  function confirmExit() {
+    playClickSound();
+
+    const difficulty = getQueryParam();
+    const gameOverTime = timer;
+    const currentScore = score;
+
+    submitScore(difficulty, currentScore, gameOverTime);
+    exitConfirmationModal.hide();
+    window.location.href = "/";
+  }
+  function toggleMute() {
+    playClickSound(); // Assuming this function plays a click sound
+
+    const muteIconPath =
+      '<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 576 512"><path d="M301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h67.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3zM425 167l55 55 55-55c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-55 55 55 55c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-55-55-55 55c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l55-55-55-55c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0z"/></svg>';
+    const unmuteIconPath =
+      '<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 640 512"><path d="M533.6 32.5C598.5 85.2 640 165.8 640 256s-41.5 170.7-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h67.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z"/></svg>';
+
+    isMuted = !isMuted; // Toggle the mute state
+
+    if (isMuted) {
+      backgroundMusic.volume = 0;
+      clickMusic.volume = 0;
+      tapMusic.volume = 0;
+      wormMovementMusic.volume = 0;
+      collisionMusic.volume = 0;
+      gameOverMusic.volume = 0;
+      btnMute.innerHTML = unmuteIconPath;
+    } else {
+      btnMute.innerHTML = muteIconPath;
+      playBackgroundMusic();
+      resetVolume();
+    }
+  }
+
   function togglePause() {
+    playClickSound();
+    const pauseIconPath =
+      '<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 320 512"><path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"/></svg>';
+    const resumeIconPath =
+      '<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg>';
+
     isPaused = !isPaused; // Toggle the pause state
-
     if (isPaused) {
-      btnPause.textContent = "Resume";
+      backgroundMusic.pause();
+      wormMovementMusic.pause();
 
-      // If paused, store the current speed
+      btnPause.innerHTML = resumeIconPath;
       pausedSpeed = worm.speed;
-      console.log("Paused Speed: " + worm.speed);
       cancelAnimationFrame(requestAnimationFrame);
       displayStatusText = true; // Set the flag to display the status text
       render();
     } else {
-      btnPause.textContent = "Pause";
-      // If resumed, restore the stored speed and restart the game loop
-      worm.speed = pausedSpeed;
-      console.log("Resumed Speed: " + worm.speed);
+      playBackgroundMusic();
+      playWormMovementSound();
 
-      // Reset the displayStatusText flag when resuming
+      btnPause.innerHTML = pauseIconPath;
+      worm.speed = pausedSpeed;
+
       displayStatusText = false;
 
       requestAnimationFrame(gameLoop);
     }
   }
 
-  function setup() {
-    canvas = document.getElementById("gameCanvas");
-    ctx = canvas.getContext("2d");
+  let audioFilesLoaded = 0;
+  const totalAudioFiles = 6;
 
-    initializeGameObjects();
-    initializeObstacles();
+  const checkAudioFiles = () => {
+    audioFilesLoaded++;
+    console.log(audioFilesLoaded);
 
-    window.addEventListener("keydown", handleKeyPress);
+    if (audioFilesLoaded === totalAudioFiles) {
+      canvas = document.getElementById("gameCanvas");
+      ctx = canvas.getContext("2d");
 
-    if (!isPaused) {
-      startTimer();
-    }
+      initializeGameObjects();
+      initializeObstacles();
+      window.addEventListener("keydown", handleKeyPress);
 
-    setInterval(() => {
       if (!isPaused) {
-        decrementImmunityTime();
+        startTimer();
       }
-    }, 1000);
 
-    setInterval(() => {
-      if (!isPaused && !isImmune) {
-        increaseSpeedAndTime();
-      }
-    }, 1000);
+      setInterval(() => {
+        if (!isPaused) {
+          decrementImmunityTime();
+        }
+      }, 1000);
 
-    // Add event listener for visibility change
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    adjustRecalculationInterval(selectedDifficulty);
+      setInterval(() => {
+        if (!isPaused && !isImmune) {
+          increaseSpeedAndTime();
+        }
+      }, 1000);
 
-    requestAnimationFrame(gameLoop);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      adjustRecalculationInterval(selectedDifficulty);
+
+      requestAnimationFrame(gameLoop);
+      hideLoadingScreen();
+    }
+  };
+
+  function setup() {
+    if (!isLoggedIn()) {
+      window.location.href = "/";
+      return;
+    }
+    loadingOverlay.style.display = "flex";
+
+    backgroundMusic.addEventListener("canplaythrough", checkAudioFiles);
+    clickMusic.addEventListener("canplaythrough", checkAudioFiles);
+    collisionMusic.addEventListener("canplaythrough", checkAudioFiles);
+    wormMovementMusic.addEventListener("canplaythrough", checkAudioFiles);
+    gameOverMusic.addEventListener("canplaythrough", checkAudioFiles);
+    tapMusic.addEventListener("canplaythrough", checkAudioFiles);
+
+    backgroundMusic.load();
+    clickMusic.load();
+    collisionMusic.load();
+    wormMovementMusic.load();
+    gameOverMusic.load();
+    tapMusic.load();
   }
 
   function decrementImmunityTime() {
@@ -218,22 +452,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // Reset game over flag
     isGameOver = false;
 
-    // Set initial position for the worm inside the empty square
-    const squareSize = 10 * OBSTACLE_SIZE;
-    const squareX = canvas.width / 2 - squareSize / 2;
-    const squareY = canvas.height / 2 - squareSize / 2;
+    // Set initial position for the worm and apple in the center
+    const canvasCenterX = Math.floor(canvas.width / 2);
+    const canvasCenterY = Math.floor(canvas.height / 2);
 
-    // Set the worm's speed to its default value
+    const wormInitialX =
+      canvasCenterX - (INITIAL_WORM_LENGTH - 1) * OBSTACLE_SIZE;
+    const wormInitialY = canvasCenterY;
+
     worm = {
-      x:
-        Math.floor(Math.random() * (canvas.width / OBSTACLE_SIZE)) *
-        OBSTACLE_SIZE,
-      y:
-        Math.floor(Math.random() * (canvas.height / OBSTACLE_SIZE)) *
-        OBSTACLE_SIZE,
+      x: wormInitialX,
+      y: wormInitialY,
       size: 30,
       color: "#00FF00",
-      speed: DEFAULT_WORM_SPEED, // Set the speed to the default value
+      speed: DEFAULT_WORM_SPEED,
     };
 
     // Initialize worm body
@@ -243,22 +475,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Set initial position for the apple away from obstacles and worm
+    const appleInitialX = canvasCenterX;
+    const appleInitialY = canvasCenterY;
+
     do {
       apple = {
-        x:
-          Math.floor(Math.random() * (canvas.width / OBSTACLE_SIZE)) *
-          OBSTACLE_SIZE,
-        y:
-          Math.floor(Math.random() * (canvas.height / OBSTACLE_SIZE)) *
-          OBSTACLE_SIZE,
+        x: appleInitialX,
+        y: appleInitialY,
         size: 30,
         color: "#FF0000",
       };
-    } while (
-      isCollisionWithObstacles(apple) ||
-      isCollisionWithWorm(apple) ||
-      isCollisionWithApple() // Call isCollisionWithApple after apple is assigned
-    );
+    } while (isCollisionWithObstacles(apple) || isCollisionWithWorm(apple) || isCollisionWithApple());
 
     console.log("Game objects initialized.");
   }
@@ -273,6 +500,7 @@ document.addEventListener("DOMContentLoaded", function () {
         object.y + object.size > segment.y
       ) {
         console.log("Collision with worm detected.");
+        playCollisionSound();
         return true; // Collision detected
       }
     }
@@ -287,8 +515,8 @@ document.addEventListener("DOMContentLoaded", function () {
         object.y < obstacle.y + obstacle.size &&
         object.y + object.size > obstacle.y
       ) {
+        playCollisionSound();
         return true; // Collision detected
-        console.log("Collision with obstacle detected");
       }
     }
     return false; // No collision
@@ -296,6 +524,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Inside the handleKeyPress function
   function handleKeyPress(event) {
+    playTapSound();
     // Arrow key codes: 37 (left), 38 (up), 39 (right), 40 (down)
     // "a": 65, "w": 87, "s": 83, "d": 68
     switch (event.keyCode) {
@@ -409,6 +638,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
       moveWorm(deltaTime); // Pass deltaTime to moveWorm
       checkCollision();
+
+      // Update the score every SCORE_UPDATE_INTERVAL seconds
+      if (currentTime - lastScoreUpdateTime >= SCORE_UPDATE_INTERVAL * 1000) {
+        score +=
+          scoreIncrementPerSecond * getDifficultyMultiplier(selectedDifficulty);
+
+        console.log("Score: " + score);
+        lastScoreUpdateTime = currentTime; // Update the last score update time
+      }
     }
 
     render();
@@ -416,8 +654,19 @@ document.addEventListener("DOMContentLoaded", function () {
     lastFrameTime = currentTime; // Update lastFrameTime
 
     requestAnimationFrame(gameLoop);
+  }
 
-    // Reset frameCount at the end of each frame
+  function getDifficultyMultiplier(difficulty) {
+    console.log("Get Difficulty: " + difficulty);
+    switch (difficulty) {
+      case "easy":
+        return 0.5; // Example: Lower multiplier for easy difficulty
+      case "medium":
+        return 1; // Use the default multiplier for medium difficulty
+      case "hard":
+        return 1.5; // Example: Higher multiplier for hard difficulty
+      // Add more cases as needed
+    }
   }
 
   frameCount = 0;
@@ -426,6 +675,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function moveWorm(deltaTime) {
     if (!isPaused) {
+      playWormMovementSound();
       // Only move the worm if the game is not paused
       // Store the last position of the head
       const lastHeadPosition = { x: worm.x, y: worm.y };
@@ -570,9 +820,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function checkCollision() {
     if (!isImmune && isCollisionWithApple() && isImmunityTimeElapsed()) {
-      console.log("Collision with Apple Detected");
+      playAppleCollisionMusic();
       endGame();
-      // Handle collision with apple, e.g., increase score or perform other actions
     }
   }
 
@@ -590,33 +839,38 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function endGame() {
-    console.log("Game Over");
-    alert("Game Over");
+    wormMovementMusic.pause();
+    playGameOverMusic();
+    backgroundMusic.pause();
 
-    // Clear the timer interval
+    const btnPlayAgain = document.getElementById("btnPlayAgain");
+    const btnMainMenu = document.getElementById("btnMainMenu");
+    const gameOverScore = document.getElementById("gameOverScore");
+    const gameOverDifficulty = document.getElementById("gameOverDifficulty");
+    const gameOverTime = document.getElementById("gameOverTime");
+    const difficulty = getQueryParam();
+    const timeLength = timer;
+    const currentScore = score;
+
+    gameOverScore.textContent = currentScore;
+    gameOverDifficulty.textContent = difficulty;
+    gameOverTime.textContent = timeLength;
+    gameOverModal.show();
+
+    submitScore(difficulty, currentScore, timeLength);
     clearInterval(timerInterval);
 
-    // Reset the game state after the alert is closed
-    console.log("Resetting game state...");
     immunityTime = IMMUNITY_TIME;
     isImmune = true;
-
-    // Reset the path variable
     path = [];
-
-    // Reset the worm's speed to its default value
     worm.speed = DEFAULT_WORM_SPEED; // Set it to your default speed value
-
-    // Reset variables for a new game
     worm = null; // Reset or reinitialize worm
     wormBody = [];
     apple = null; // Reset or reinitialize apple
     obstacles = [];
-    clearInterval(timerInterval);
     immunityTime = IMMUNITY_TIME;
     isImmune = true;
     isGameOver = false;
-    path = [];
     lastPathCalculationTime = 0;
     isPaused = false;
     isPageVisible = true;
@@ -624,22 +878,70 @@ document.addEventListener("DOMContentLoaded", function () {
     lastFrameTime = null;
     currentTime = 0;
     frameCount = 0;
+    score = 0;
+
     initializeGameObjects();
     initializeObstacles();
 
-    // Reset the timer and start it again
-    startTimer();
+    btnMainMenu.addEventListener("click", function () {
+      playClickSound();
+      gameOverModal.hide();
+      window.location.href = "/";
+    });
 
-    // Log the new positions of the worm and apple after resetting the game state
-    console.log("Worm position after reset:", worm.x, worm.y);
-    console.log("Apple position after reset:", apple.x, apple.y);
+    btnPlayAgain.addEventListener("click", function () {
+      playClickSound();
+      gameOverModal.hide();
+      loadingOverlay.style.display = "flex";
+
+      startTimer();
+      hideLoadingScreen();
+    });
+  }
+
+  function submitScore(difficulty, score, timeLength) {
+    // Get the user's role from the URL
+    const userRole = getRoleFromUrl();
+
+    // Make sure the user's role is valid
+    if (userRole === null) {
+      console.error("Player is guest, cannot submit score");
+      return;
+    }
+
+    // Make a POST request to submit the score
+    fetch("/submit-score", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        role: userRole,
+        difficulty: difficulty,
+        score: score,
+        timeLength: timeLength,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        // Handle the response as needed
+        // For example, you can redirect the user or display a success message
+      })
+      .catch((error) => console.error("Error submitting score:", error));
   }
 
   function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Render gridlines
-    ctx.strokeStyle = "#CCCCCC"; // Color of the gridlines
+    ctx.fillStyle = "#212529";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = "#555555"; // Color for canvas border
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = "#555555"; // Color of the gridlines
     ctx.lineWidth = 1;
 
     for (let x = 0; x <= canvas.width; x += OBSTACLE_SIZE) {
@@ -656,59 +958,81 @@ document.addEventListener("DOMContentLoaded", function () {
       ctx.stroke();
     }
 
-    // Render obstacles
-    ctx.fillStyle = "#0000FF";
+    ctx.fillStyle = "#6c757d"; // Dark gray color for obstacles
     for (let obstacle of obstacles) {
       ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
     }
 
-    // Render apple with blinking effect
     if (isImmune && immunityTime % 2 === 0) {
       ctx.fillStyle = "#FFFF00"; // Blinking color (e.g., yellow)
     } else {
-      ctx.fillStyle = apple.color;
+      ctx.fillStyle = "#dc3545"; // Red color for apple
     }
-    ctx.fillRect(apple.x, apple.y, apple.size, apple.size);
+    ctx.beginPath();
+    ctx.arc(
+      apple.x + apple.size / 2,
+      apple.y + apple.size / 2,
+      apple.size / 2,
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
 
-    // Render worm
-    ctx.fillStyle = worm.color;
+    ctx.fillStyle = "#28a745"; // Green color for worm
     for (let segment of wormBody) {
       ctx.fillRect(segment.x, segment.y, worm.size, worm.size);
     }
 
-    // Render timer on the canvas
-    ctx.fillStyle = "#000000"; // Timer color
+    ctx.fillStyle = "#ffffff"; // Timer color (white)
     ctx.font = "20px Arial";
 
-    // Convert timer to hh:mm:ss format
     const hours = Math.floor(timer / 3600);
     const minutes = Math.floor((timer % 3600) / 60);
     const seconds = timer % 60;
 
-    // Display the formatted time
     const formattedTime = `${padZero(hours)}:${padZero(minutes)}:${padZero(
       seconds
     )}`;
     ctx.fillText("Time: " + formattedTime, 10, 20);
 
-    // Render score on the canvas (on the right side of the timer)
-    ctx.fillStyle = "#000000"; // Score color
+    ctx.fillStyle = "#ffffff"; // Score color (white)
     ctx.font = "20px Arial";
-    const scoreText = "Score: " + score;
-    const scoreTextWidth = ctx.measureText(scoreText).width;
-    ctx.fillText(scoreText, canvas.width - scoreTextWidth - 10, 20);
+    const renderedScore = isNaN(score)
+      ? "Score: N/A"
+      : "Score: " + Math.floor(score);
+    const scoreTextWidth = ctx.measureText(renderedScore).width;
+    ctx.fillText(renderedScore, canvas.width - scoreTextWidth - 10, 20);
 
-    // Render status text if the game is paused
     if (displayStatusText) {
-      ctx.fillStyle = "000000"; // Status text color (e.g., red)
+      ctx.fillStyle = "#ffffff"; // Status text color (e.g., red)
       ctx.font = "30px Arial";
       ctx.fillText("Game Paused", canvas.width / 2 - 100, canvas.height / 2);
     }
   }
 
-  // Helper function to pad single digits with a leading zero
   function padZero(num) {
     return num < 10 ? "0" + num : num;
+  }
+
+  function getQueryParam() {
+    const pathArray = window.location.pathname.split("/");
+    const difficultyIndex = pathArray.indexOf("game") + 2; // Assuming difficulty is always two levels after "game"
+    const difficultyWithColon =
+      difficultyIndex >= 0 && difficultyIndex < pathArray.length
+        ? pathArray[difficultyIndex]
+        : null;
+
+    const difficulty = difficultyWithColon
+      ? difficultyWithColon.replace(":", "")
+      : null;
+
+    return difficulty;
+  }
+  function getRoleFromUrl() {
+    const url = window.location.pathname; // Get the current path
+    const parts = url.split("/"); // Split the path into parts
+    const roleIndex = parts.indexOf("game") + 1; // Find the index of 'game' and add 1 to get the role
+    return roleIndex < parts.length ? parts[roleIndex] : null; // Return the role if found, otherwise null
   }
 
   window.onload = setup;

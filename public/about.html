@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="About Page for Apple Chase: Worm Odyssey"
+    />
+    <meta name="keywords" content="about, Apple Chase, Worm Odyssey, game" />
+    <meta name="author" content="John Kien D. Villegas" />
+    <link rel="icon" type="image/png" href="assets/logo.png" />
+    <title>About Us - Apple Chase: Worm Odyssey</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles/about.css" />
+  </head>
+
+  <body>
+    <audio id="backgroundMusic" loop autoplay>
+      <!-- Customize the src attribute with the path to your background music file -->
+      <source src="assets/audio/background_music_2.mp3" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="buttonClickSound">
+      <!-- Customize the src attribute with the path to your background music file -->
+      <source src="assets/audio/click1.ogg" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="/">Apple Chase: Worm Odyssey</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/leaderboard">Leaderboard</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="/about"
+              >About
+              <span class="sr-only">(current)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/contact-us">Contact </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">About Us</h2>
+
+      <p>
+        Welcome to Apple Chase: Worm Odyssey, an exciting game inspired by the
+        classic "Snake Xenzia" from Nokia 3310. Our game takes the nostalgic
+        snake concept and adds a fresh twist, putting you in control of an apple
+        facing various obstacles and stages.
+      </p>
+
+      <h3 class="mt-4">Development Team</h3>
+      <p>Meet the talented individuals behind the project:</p>
+      <ul>
+        <li>
+          <strong
+            >Mac-Allen C. Taghap (Project Manager, Team Leader, UI/UX
+            Designer)</strong
+          >: Spearheads the project's overall direction, ensuring effective
+          collaboration within the team and overseeing the creation of an
+          engaging user interface.
+        </li>
+        <li>
+          <strong>Amy B. Valencia (Quality Assurance Specialist)</strong>: Plays
+          a crucial role in ensuring the project's high quality through
+          meticulous testing and also handles documentation and research
+          responsibilities.
+        </li>
+        <li>
+          <strong
+            >John Kien D. Villegas (Game Developer, Quality Assurance Expert,
+            Technical Writer)</strong
+          >: A versatile contributor serving as both a Game Developer and
+          Quality Assurance expert, bringing creative visions to life in the
+          coding realm and documenting technical intricacies for clear
+          understanding.
+        </li>
+      </ul>
+
+      <h3 class="mt-4">Project Overview</h3>
+      <p>
+        Discover the world of Apple Chase: Worm Odyssey, a game that brings the
+        classic Snake concept to life in a new way. Inspired by the iconic Nokia
+        game, our goal is to revive the nostalgia while introducing innovative
+        gameplay mechanics. Join us on this journey through time and technology!
+      </p>
+
+      <h3 class="mt-4">Development Process</h3>
+      <p>
+        The project has been meticulously planned and executed in defined
+        phases:
+      </p>
+      <ul>
+        <li>
+          <strong
+            >Conceptualization Phase (November 16, 2023, to January 5,
+            2024):</strong
+          >
+          Defines game mechanics and rules, with planning initiated from
+          November 17 to November 19, 2023.
+        </li>
+        <li>
+          <strong>Game Design Phase (November 19 to November 22, 2023):</strong>
+          Sets the creative direction of the game.
+        </li>
+        <li>
+          <strong>Programming Phase (November 19 to November 29, 2023):</strong>
+          Implements core functionalities.
+        </li>
+        <li>
+          <strong
+            >Testing and Debugging (November 29 to December 5, 2023):</strong
+          >
+          Rigorously evaluates the game's functionality.
+        </li>
+        <li>
+          <strong
+            >User Interface Development (December 5 to December 25,
+            2023):</strong
+          >
+          Crafts the visual and interactive aspects of the game.
+        </li>
+        <li>
+          <strong>Polishing Phase (December 25 to December 30, 2023):</strong>
+          Dedicated to refining graphics and animations.
+        </li>
+        <li>
+          <strong
+            >Quality Assurance (December 30, 2023, to January 5, 2024):</strong
+          >
+          Ensures a stable and enjoyable gaming experience.
+        </li>
+        <li>
+          <strong>Documentation Phase (Concludes on January 5, 2024):</strong>
+          Captures the technical and creative aspects of the development
+          process.
+        </li>
+        <li>
+          <strong>Release Phase (January 5, 2024):</strong> Marks the
+          culmination of the project, showcasing collaborative efforts and
+          creativity.
+        </li>
+      </ul>
+
+      <div class="text-center mt-4">
+        <a href="/" class="btn btn-primary" id="btnPlayNow">Play Now</a>
+      </div>
+    </div>
+
+    <!-- Your existing modals and scripts... -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+    <script src="scripts/about.js"></script>
+    <!-- Additional scripts for the about page... -->
+  </body>
+</html>

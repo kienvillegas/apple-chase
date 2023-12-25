@@ -1,0 +1,73 @@
+body {
+  background-color: #343a40;
+  color: #fff;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  background-color: #212529;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 50%;
+  box-sizing: border-box;
+  margin: auto; /* Center the container */
+  position: relative; /* Set position to relative */
+  min-height: 300px; /* Set a minimum height for the container */
+}
+
+label {
+  color: #ffc107;
+}
+
+.form-control {
+  background-color: #343a40;
+  color: #fff;
+  border: 1px solid #ffc107;
+}
+
+.btn-primary {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+.btn-primary:hover {
+  background-color: #ffca2b;
+  border-color: #ffca2b;
+}
+
+#submit-status {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  margin: auto;
+  text-align: center;
+}
+
+nav {
+  background-color: #343a40;
+  padding: 15px 0;
+  text-align: center;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  font-size: 16px;
+}
+
+nav a:hover {
+  background-color: #555;
+  border-radius: 5px;
+}
+
+nav {
+  z-index: 1000; /* Set a high z-index to ensure the navigation bar is on top */
+}

@@ -1,0 +1,52 @@
+body {
+  background-color: #343a40;
+  color: #fff;
+  padding: 50px;
+}
+
+.container {
+  background-color: #212529;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #ffc107;
+}
+
+p {
+  color: #fff;
+}
+
+.btn-primary {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+.btn-primary:hover {
+  background-color: #ffca2b;
+  border-color: #ffca2b;
+}
+nav {
+  background-color: #343a40;
+  padding: 15px 0;
+  text-align: center;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  font-size: 16px;
+}
+
+nav a:hover {
+  background-color: #555;
+  border-radius: 5px;
+}
+
+nav {
+  z-index: 1000; /* Set a high z-index to ensure the navigation bar is on top */
+}

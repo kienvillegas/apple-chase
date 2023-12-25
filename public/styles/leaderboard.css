@@ -1,0 +1,84 @@
+/* leaderboard.css */
+
+body {
+  background-color: #343a40; /* Dark background color */
+  color: #ffffff; /* White text color */
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.container {
+  max-width: 800px;
+  background-color: #343a40; /* Dark background color for the container */
+  color: #ffffff; /* White text color for the container */
+  border: 1px solid #ffffff; /* Blue border for the container */
+  border-radius: 10px; /* Optional: Add border-radius for rounded corners */
+  padding: 20px; /* Optional: Add padding for spacing */
+}
+
+.table {
+  background-color: #343a40; /* Dark background color for the table */
+  margin-top: 20px;
+}
+
+/* Custom styles for layout adjustments */
+.form-group {
+  display: flex;
+  align-items: center;
+}
+
+#difficulty-select {
+  width: 120px; /* Adjust the width as needed */
+  margin-left: 10px; /* Add space between the label and dropdown */
+}
+
+h2 {
+  color: #ffffff; /* White title color */
+}
+
+.form-group label {
+  color: #ffffff; /* White text color for labels */
+}
+
+.form-control {
+  background-color: #007bff; /* Blue background color for the select input */
+  border: 1px solid #007bff; /* Blue border for the select input */
+  color: #ffffff; /* White text color for the select input */
+}
+
+.table th,
+.table td {
+  border: 1px solid #ffffff; /* Blue border for table headers and cells */
+  color: #ffffff; /* White text color for table headers and cells */
+}
+
+.table thead th {
+  background-color: #343a40; /* Dark background color for table header */
+}
+
+.table tbody tr:hover {
+  background-color: #0056b3; /* Slightly darker blue on hover for table rows */
+}
+
+nav {
+  background-color: #343a40;
+  padding: 15px 0;
+  text-align: center;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  font-size: 16px;
+}
+
+nav a:hover {
+  background-color: #555;
+  border-radius: 5px;
+}
+
+nav {
+  z-index: 1000; /* Set a high z-index to ensure the navigation bar is on top */
+}

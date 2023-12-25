@@ -3,31 +3,603 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Home page for Apple Chase: Worm Odyssey"
+    />
+    <meta
+      name="keywords"
+      content="leaderboard, Apple Chase, Worm Odyssey, game"
+    />
+    <meta name="author" content="John Kien D. Villegas" />
+    <link rel="icon" type="image/png" href="assets/logo.png" />
     <title>Apple Chase: Worm Oddysey</title>
     <link rel="stylesheet" href="styles/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
   </head>
-  <body>
-    <div class="container">
+  <body
+    class="d-flex align-items-center justify-content-center min-vh-100 bg-dark text-light"
+  >
+    <audio id="backgroundMusic" loop autoplay>
+      <!-- Customize the src attribute with the path to your background music file -->
+      <source src="/assets/audio/background_music_2.mp3" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="buttonClickSound">
+      <source src="/assets/audio/click1.ogg" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="errorSound">
+      <source src="/assets/audio/error_sound.ogg" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <audio id="selectDifficulty">
+      <source src="/assets/audio/select_difficulty.ogg" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+    <div class="container text-center">
       <div class="title-container">
-        <h1>Apple Chase</h1>
-        <p>Worm Oddysey</p>
+        <h1 class="display-4">Apple Chase</h1>
+        <p class="lead">Worm Oddysey</p>
       </div>
       <div class="content-container">
-        <button id="btnStartGame">Start Game</button>
-        <div class="dificulty">
-          <p>Dificulty:</p>
-          <select id="difficulty">
-            <option value="Easy" selected>Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
+        <div class="row mt-3 justify-content-center">
+          <div class="col-auto">
+            <button id="btnStartGame" class="btn btn-primary btn-lg mx-auto">
+              Start Game
+            </button>
+            <button id="btnPlayAsGuest" class="btn btn-primary btn-lg mx-auto">
+              Play as Guest
+            </button>
+            <div class="difficulty mt-3">
+              <p class="lead">Difficulty:</p>
+              <select id="difficulty" class="form-control">
+                <option value="easy" selected>Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <!-- Secondary Actions -->
+            <button id="btnLeaderboard" class="btn btn-secondary mt-3">
+              Leaderboard
+            </button>
+            <button id="btnInstructions" class="btn btn-secondary mt-3">
+              Instructions
+            </button>
+            <button id="btnSettings" class="btn btn-secondary mt-3">
+              Settings
+            </button>
+            <!-- Additional Information/Utilities -->
+            <button id="btnAbout" class="btn btn-secondary mt-3">
+              <a
+                href="/about"
+                style="
+                  color: inherit;
+                  text-decoration: none;
+                  display: block;
+                  width: 100%;
+                  height: 100%;
+                "
+              >
+                About
+              </a>
+            </button>
+            <button id="btnSignout" class="btn btn-secondary mt-3">
+              Logout
+            </button>
+          </div>
         </div>
-        <button id="btnMute">Mute</button>
-        <button id="btnInstructions">Instructions</button>
+        <div class="row mt-3 justify-content-center">
+          <div class="col-auto">
+            <p class="text-light mb-0" id="orText">or</p>
+          </div>
+        </div>
+        <div class="row mt-3 justify-content-center">
+          <div class="col-auto">
+            <div class="btn-group">
+              <button id="btnSignIn" class="btn btn-secondary">Sign In</button>
+              <button id="btnSignUp" class="btn btn-secondary ml-2">
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-3 justify-content-center">
+          <div class="col-auto">
+            <a href="/contact-us" class="btn btn-info mt-3">Contact Us</a>
+          </div>
+        </div>
       </div>
     </div>
-    <footer></footer>
-    <script src="scripts/index.js"></script>
-    <script src="scripts//game.js"></script>
+
+    <!-- Error Modal -->
+    <div
+      class="modal fade"
+      id="errorModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="errorModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="errorModalTitle">Error</h5>
+            <button
+              type="button"
+              class="close text-light"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="errorModalMessage"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sign In Modal -->
+    <div
+      class="modal fade"
+      id="signInModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="signInModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="signInModalTitle">Sign In</h5>
+            <button
+              type="button"
+              class="close text-light"
+              id="btnCloseSignIn"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="signInForm" class="form-group">
+              <div class="form-group">
+                <label for="usernameSignIn" class="text-light mb-1"
+                  >Enter your username:</label
+                >
+                <input
+                  id="usernameSignIn"
+                  name="usernameSignIn"
+                  type="text"
+                  class="form-control"
+                  required
+                />
+                <small id="usernameHelp" class="form-text"></small>
+                <br />
+                <label for="passwordSignIn" class="text-light mb-1"
+                  >Enter your password:</label
+                >
+                <div class="input-group">
+                  <input
+                    id="passwordSignIn"
+                    name="passwordSignIn"
+                    type="password"
+                    class="form-control"
+                    required
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-outline-secondary show-password-btn"
+                      type="button"
+                      id="showPasswordSignIn"
+                    >
+                      Show
+                    </button>
+                  </div>
+                </div>
+                <small id="passwordHelp" class="form-text"></small>
+              </div>
+
+              <div id="signInLoading" style="display: none">
+                <div class="spinner-border text-light" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+                <span class="text-light ml-2">Signing In...</span>
+              </div>
+
+              <input
+                type="submit"
+                id="btnSignInSubmit"
+                class="btn btn-primary btn-block"
+                value="Sign In"
+              />
+              <small id="signInError" class="text-danger"></small>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div
+      class="modal fade"
+      id="signUpModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="signUpModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="signUpModalTitle">Sign Up</h5>
+            <button
+              type="button"
+              class="close text-light"
+              id="btnCloseSignUp"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="signUpForm" class="form-group">
+              <div class="form-group">
+                <label for="newUsername" class="text-light mb-1"
+                  >Enter your username:</label
+                >
+                <input
+                  id="newUsername"
+                  name="newUsername"
+                  type="text"
+                  class="form-control"
+                  required
+                />
+                <small id="newUsernameHelp" class="form-text"
+                  >Must be unique and at least 5 characters long.</small
+                >
+
+                <label for="newPassword" class="text-light mb-1"
+                  >Enter your password:</label
+                >
+                <div class="input-group">
+                  <input
+                    id="newPassword"
+                    name="newPassword"
+                    type="password"
+                    class="form-control"
+                    required
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-outline-secondary show-password-btn"
+                      type="button"
+                      id="showPasswordSignUp"
+                    >
+                      Show
+                    </button>
+                  </div>
+                </div>
+                <small id="newPasswordHelp" class="form-text"
+                  >Must be at least 8 characters long.</small
+                >
+
+                <label for="confirmPassword" class="text-light mb-1"
+                  >Confirm your password:</label
+                >
+                <div class="input-group">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    class="form-control"
+                    required
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-outline-secondary show-password-btn"
+                      type="button"
+                      id="showConfirmPasswordSignUp"
+                    >
+                      Show
+                    </button>
+                  </div>
+                </div>
+                <small id="confirmPasswordHelp" class="form-text"
+                  >Enter the same password as above.</small
+                >
+              </div>
+              <div id="signUpLoading" style="display: none">
+                <div class="spinner-border text-light" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+                <span class="text-light ml-2">Signing Up...</span>
+              </div>
+              <input
+                type="submit"
+                id="btnSignUpSubmit"
+                class="btn btn-primary btn-block"
+                value="Sign Up"
+              />
+              <small id="signUpError" class="text-danger"></small>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="logoutConfirmationModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="logoutConfirmationModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logoutConfirmationModalTitle">
+              Logout Confirmation
+            </h5>
+            <button
+              type="button"
+              class="close text-light"
+              data-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to logout?</p>
+          </div>
+          <div class="modal-footer">
+            <!-- Small element for displaying messages -->
+            <small id="logoutError" class="text-danger"></small>
+
+            <div id="logOutLoading" style="display: none">
+              <div class="spinner-border text-light" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+              <span class="text-light ml-2">Signing Out...</span>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+              id="btnCancelLogout"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="btnConfirmLogout">
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exit Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="exitConfirmationModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exitConfirmationModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exitConfirmationModalTitle">
+              Exit Confirmation
+            </h5>
+            <button
+              type="button"
+              class="close text-light"
+              data-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to exit the game?</p>
+          </div>
+          <div class="modal-footer">
+            <!-- Small element for displaying messages -->
+            <small id="exitError" class="text-danger"></small>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+              id="btnCancelExit"
+            >
+              Cancel
+            </button>
+            <button type="button" class="btn btn-danger" id="btnConfirmExit">
+              Exit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Settings Modal -->
+    <div
+      class="modal fade"
+      id="settingsModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="settingsModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="settingsModalTitle">Settings</h5>
+            <button
+              type="button"
+              class="close text-light"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Volume Control -->
+            <div class="form-group">
+              <label for="volumeControl" class="text-light mb-1"
+                >Volume Control:</label
+              >
+              <span id="currentVolume"> 50</span>
+              <input
+                type="range"
+                class="form-control-range"
+                id="volumeControl"
+                min="0"
+                max="100"
+                step="1"
+                value="50"
+              />
+            </div>
+            <!-- Message indicating that changes are saved -->
+            <div
+              id="changesSavedMessage"
+              class="alert mt-3"
+              style="display: none"
+            >
+              <p id="settingsSaveChangesText"></p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary" id="saveSettings">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div
+      class="modal fade"
+      id="instructionsModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="instructionsModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="instructionsModalTitle">
+              Game Instructions
+            </h5>
+            <button
+              type="button"
+              class="close text-light"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Instruction slides -->
+            <div class="instruction-slides">
+              <!-- Slide 1 -->
+              <div class="instruction-slide">
+                <h2>Slide 1</h2>
+                <img
+                  src="https://via.placeholder.com/800x400"
+                  alt="Instruction Image 1"
+                  class="img-fluid mb-3"
+                />
+                <p>
+                  This is the first instruction. Add your content for this slide
+                  here.
+                </p>
+              </div>
+
+              <!-- Slide 2 -->
+              <div class="instruction-slide">
+                <h2>Slide 2</h2>
+                <img
+                  src="https://via.placeholder.com/800x400"
+                  alt="Instruction Image 2"
+                  class="img-fluid mb-3"
+                />
+                <p>
+                  This is the second instruction. Add your content for this
+                  slide here.
+                </p>
+              </div>
+
+              <!-- Slide 3 -->
+              <div class="instruction-slide">
+                <h2>Slide 3</h2>
+                <img
+                  src="https://via.placeholder.com/800x400"
+                  alt="Instruction Image 3"
+                  class="img-fluid mb-3"
+                />
+                <p>
+                  This is the third instruction. Add your content for this slide
+                  here.
+                </p>
+              </div>
+            </div>
+
+            <!-- Slider buttons at each end -->
+            <div class="d-flex justify-content-between mt-3">
+              <button class="btn btn-primary btn-slider" id="btnPrevSlide">
+                Previous
+              </button>
+              <button class="btn btn-primary btn-slider" id="btnNextSlide">
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="scripts/index.js"></script>
   </body>
 </html>

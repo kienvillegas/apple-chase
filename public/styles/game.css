@@ -1,32 +1,124 @@
-body {
-  margin: 0;
-  overflow: hidden; /* Prevent scrollbars */
-  padding: 1em 0 0 0;
+body,
+html {
+  overflow-y: hidden; /* Hide vertical scrollbar */
+  background-color: #343a40; /* Dark background color */
 }
 
-.container {
-  height: 100vh; /* Take up full height of viewport */
+.game-settings button {
+  margin-right: 10px; /* Adjust the margin between buttons */
 }
 
-.game-settings {
-  float: right;
-  margin: 0 1em;
+.btn-icon {
+  margin: 0 10px; /* Adjust the spacing between buttons */
+  width: 60px; /* Adjust the width as needed */
+  height: 60px; /* Adjust the height as needed */
 }
 
-.content-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  align-items: center;
+canvas {
+  border: 1px solid #000;
+  display: block;
+  margin: 20px auto;
+  background-color: #343a40; /* Dark canvas background color */
+}
+
+.btn-primary,
+.btn-danger,
+.btn-secondary,
+.btn-success {
+  color: #ffffff; /* White text color */
+}
+
+.btn-primary:hover,
+.btn-danger:hover,
+.btn-secondary:hover,
+.btn-success:hover {
+  background-color: #0056b3; /* Slightly darker blue on hover */
+  border-color: #0056b3;
+}
+
+.modal-content {
+  background-color: #343a40; /* Dark modal background color */
+  color: #ffffff; /* White text color */
+}
+
+.modal-header {
+  border-bottom: 2px solid #007bff; /* Blue border */
+}
+
+.close {
+  color: #ffffff; /* White close button color */
+}
+
+#exitConfirmationModal,
+#gameOverModal {
+  background-color: #343a40; /* Dark modal background color */
+}
+
+#exitError,
+#gameOverError {
+  color: #dc3545; /* Red error text color */
+}
+
+/* Loading Screen Styles */
+
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  background-color: rgba(
+    52,
+    58,
+    64,
+    0.9
+  ); /* Dark semi-transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff; /* White text color */
 }
 
-.timer-container,
-.score-container {
-  text-align: center;
+#loading-screen p {
+  margin-left: 10px;
 }
 
-button {
-  padding: 1em 2em;
-  border-radius: 5px;
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Loading overlay styles */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #ffffff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

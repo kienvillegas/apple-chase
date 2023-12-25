@@ -1,22 +1,54 @@
 body {
-  border: 1px solid black;
-  margin: 0;
+  background-color: #343a40; /* Dark background color */
+  color: #ffffff; /* Default text color */
 }
 
-.container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.title-container {
+  color: inherit; /* Inherit the default text color */
+}
+
+.btn-primary,
+.btn-secondary {
+  background-color: #007bff; /* Blue buttons */
+  border-color: #007bff;
+  color: #ffffff;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  background-color: #0056b3; /* Slightly darker blue on hover */
+  border-color: #0056b3;
+}
+
+.modal-content {
+  background-color: #343a40; /* Dark modal background color */
+  color: #ffffff; /* Modal text color */
+}
+
+.modal-header {
+  border-bottom: 2px solid #007bff; /* Blue border */
+  color: #ffffff; /* Modal header text color */
+}
+
+.close {
+  color: #ffffff; /* White close button color */
+}
+
+footer {
+  margin-top: 20px;
   text-align: center;
+  color: #666; /* Dark gray footer text */
 }
 
-.content-container {
-  border: 1px solid red;
-  display: flex;
-  flex-direction: column;
+.form-text {
+  color: #6c757d; /* Use a color suitable for guide text */
 }
 
-.dificulty {
-  display: flex;
+.is-invalid {
+  border-width: 20px; /* Adjust the thickness as needed */
+}
+
+.password-toggle-label {
+  cursor: pointer;
+  color: #343a40; /* Set the color to the body background color */
 }
