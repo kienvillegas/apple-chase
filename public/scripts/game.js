@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const SPEED_INCREASE_INTERVAL = 60;
   const INITIAL_WORM_LENGTH = 3;
   const OBSTACLE_SIZE = 30;
-  const NUM_OBSTACLES = 100;
+  const NUM_OBSTACLES = 200;
   const IMMUNITY_TIME = 10;
   const DEFAULT_WORM_SPEED = 1;
   const DEFAULT_RECALCULATION_INTERVAL = 120;
@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const gameOverMusic = new Audio("/audio/game_over_music.mp3");
   const tapMusic = new Audio("/audio/tap_sound.mp3");
   const loadingOverlay = document.getElementById("loadingOverlay");
+  const appleSprite = document.getElementById("appleSprite");
+  const obstacleSprite = document.getElementById("obstacleSprite");
 
   document.addEventListener("keydown", () => {
     if (!isMuted && !isPaused) {
@@ -932,23 +934,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     ctx.fillStyle = "#6c757d"; // Dark gray color for obstacles
     for (let obstacle of obstacles) {
-      ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+      ctx.drawImage(
+        obstacleSprite,
+        obstacle.x,
+        obstacle.y,
+        obstacle.size,
+        obstacle.size
+      );
     }
 
     if (isImmune && immunityTime % 2 === 0) {
       ctx.fillStyle = "#FFFF00"; // Blinking color (e.g., yellow)
     } else {
-      ctx.fillStyle = "#dc3545"; // Red color for apple
+      ctx.drawImage(appleSprite, apple.x, apple.y, apple.size, apple.size);
+      // ctx.fillStyle = "#dc3545"; // Red color for apple
     }
-    ctx.beginPath();
-    ctx.arc(
-      apple.x + apple.size / 2,
-      apple.y + apple.size / 2,
-      apple.size / 2,
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
+    // ctx.beginPath();
+    // ctx.arc(
+    //   apple.x + apple.size / 2,
+    //   apple.y + apple.size / 2,
+    //   apple.size / 2,
+    //   0,
+    //   2 * Math.PI
+    // );
+    // ctx.fill();
 
     ctx.fillStyle = "#28a745"; // Green color for worm
     for (let segment of wormBody) {
