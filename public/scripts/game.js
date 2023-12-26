@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const OBSTACLE_SIZE = 30;
   const NUM_OBSTACLES = 200;
   const IMMUNITY_TIME = 10;
-  const DEFAULT_WORM_SPEED = 1;
+  const DEFAULT_WORM_SPEED = 50;
   const DEFAULT_RECALCULATION_INTERVAL = 120;
   const SCORE_UPDATE_INTERVAL = 1;
 
@@ -25,6 +25,26 @@ document.addEventListener("DOMContentLoaded", function () {
   let scoreIncrementPerSecond = 1;
   let lastScoreUpdateTime = 0;
   let isMuted = false;
+
+  const wormSprites = {
+    top: [],
+    left: [],
+    down: [],
+    right: [],
+  };
+
+  for (let i = 1; i < 5; i++) {
+    wormSprites.top.push(loadWormImage(`/assets/wormTop${i}.png`));
+    wormSprites.left.push(loadWormImage(`/assets/wormLeft${i}.png`));
+    wormSprites.down.push(loadWormImage(`/assets/wormDown${i}.png`));
+    wormSprites.right.push(loadWormImage(`/assets/wormRight${i}.png`));
+  }
+
+  function loadWormImage(src) {
+    const image = new Image();
+    image.src = src;
+    return image;
+  }
 
   const exitConfirmationModal = new bootstrap.Modal(
     document.getElementById("exitConfirmationModal")
@@ -372,7 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
       currentTime++;
       if (currentTime % SPEED_INCREASE_INTERVAL === 0) {
         // Make sure the worm's speed is not reduced below its default value
-        worm.speed = Math.max(worm.speed + 0.5, DEFAULT_WORM_SPEED);
+        worm.speed = Math.max(worm.speed + 10, DEFAULT_WORM_SPEED);
       }
     }
   }
@@ -676,7 +696,6 @@ document.addEventListener("DOMContentLoaded", function () {
   frameCount = 0;
   let path = []; // Path for the worm to follow
   let lastPathCalculationTime = 0; // Variable to track the last time the path was calculated
-
   function moveWorm(deltaTime) {
     if (!isPaused) {
       playWormMovementSound();
@@ -687,12 +706,27 @@ document.addEventListener("DOMContentLoaded", function () {
       if (path.length > 0) {
         // Move the worm along the path at a variable speed
         const speed = worm.speed; // Use the worm's speed
-        const dx = (path[0].x - worm.x) * speed;
-        const dy = (path[0].y - worm.y) * speed;
+        const dx = path[0].x - worm.x;
+        const dy = path[0].y - worm.y;
 
-        const multiplier = 5;
-        worm.x += dx * deltaTime * multiplier;
-        worm.y += dy * deltaTime * multiplier;
+        const distanceToTravel = speed * deltaTime;
+
+        // Calculate the distance to the destination
+        const distanceToDestination = Math.sqrt(dx * dx + dy * dy);
+
+        // Check if the worm has reached the destination
+        if (distanceToTravel >= distanceToDestination) {
+          // Move the worm to the destination directly
+          worm.x = path[0].x;
+          worm.y = path[0].y;
+          // Remove the reached node from the path
+          path.shift();
+        } else {
+          // Interpolate the worm's position
+          const interpolationFactor = distanceToTravel / distanceToDestination;
+          worm.x += dx * interpolationFactor;
+          worm.y += dy * interpolationFactor;
+        }
 
         // Move the worm's body
         for (let i = wormBody.length - 1; i > 0; i--) {
@@ -700,15 +734,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         wormBody[0] = lastHeadPosition; // Update the first segment of the body
-
-        // Check if the worm has reached the destination node
-        if (
-          Math.abs(worm.x - path[0].x) < 1 &&
-          Math.abs(worm.y - path[0].y) < 1
-        ) {
-          // Remove the reached node from the path
-          path.shift();
-        }
 
         // Check if the worm has reached the apple
         if (isCollisionWithApple()) {
@@ -959,10 +984,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // );
     // ctx.fill();
 
-    ctx.fillStyle = "#28a745"; // Green color for worm
-    for (let segment of wormBody) {
-      ctx.fillRect(segment.x, segment.y, worm.size, worm.size);
-    }
+    // ctx.fillStyle = "#28a745"; // Green color for worm
+    // for (let segment of wormBody) {
+    //   ctx.fillRect(segment.x, segment.y, worm.size, worm.size);
+    // }
+
+    const wormSprite = getWormSprite();
+    ctx.drawImage(wormSprite, worm.x, worm.y, worm.size, worm.size);
 
     ctx.fillStyle = "#ffffff"; // Timer color (white)
     ctx.font = "20px Arial";
@@ -991,6 +1019,38 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  let spriteIndex = 0; // Add this variable to track the current sprite index
+  let frameCounter = 0; // Add this variable to count frames
+
+  function getWormSprite() {
+    if (path.length > 0) {
+      const dx = path[0].x - worm.x;
+      const dy = path[0].y - worm.y;
+
+      let directionArray;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        // Horizontal movement
+        directionArray = dx > 0 ? wormSprites.right : wormSprites.left;
+      } else {
+        // Vertical movement
+        directionArray = dy > 0 ? wormSprites.down : wormSprites.top;
+      }
+
+      // Update the frame counter
+      frameCounter++;
+      // Change sprite every 15 frames for a slower animation
+      const framesPerSprite = 15;
+      if (frameCounter % framesPerSprite === 0) {
+        // Increment the sprite index
+        spriteIndex = (spriteIndex + 1) % directionArray.length;
+      }
+      return directionArray[spriteIndex];
+    } else {
+      // Default sprite when no path is available
+      return wormSprites.top[0];
+    }
+  }
+
   function padZero(num) {
     return num < 10 ? "0" + num : num;
   }
@@ -1009,6 +1069,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return difficulty;
   }
+
   function getRoleFromUrl() {
     const url = window.location.pathname; // Get the current path
     const parts = url.split("/"); // Split the path into parts
