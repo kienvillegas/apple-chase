@@ -57,14 +57,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnMute = document.getElementById("btnMute");
   const btnPause = document.getElementById("btnPause");
   const btnExit = document.getElementById("btnExit");
-  const backgroundMusic = new Audio("/audio/background_music_2.mp3");
-  const clickMusic = new Audio("/audio/click1.ogg");
+  const backgroundMusic = new Audio("/audio/game_bg_music.mp3");
+  const clickMusic = new Audio("/audio/click_sound.ogg");
   const collisionMusic = new Audio("/audio/collision_obstacle.ogg");
   const wormMovementMusic = new Audio("/audio/worm_movement.mp3");
   const gameOverMusic = new Audio("/audio/game_over_music.mp3");
   const tapMusic = new Audio("/audio/tap_sound.mp3");
   const loadingOverlay = document.getElementById("loadingOverlay");
-  const appleSprite = document.getElementById("appleSprite");
+  const redAppleSprite = document.getElementById("redAppleSprite");
+  const yellowAppleSprite = document.getElementById("yellowAppleSprite");
   const obstacleSprite = document.getElementById("obstacleSprite");
 
   document.addEventListener("keydown", () => {
@@ -467,7 +468,6 @@ document.addEventListener("DOMContentLoaded", function () {
         size: OBSTACLE_SIZE,
         color: "#0000FF",
       });
-      console.log(`Obstacle at: ${obstacleX} ${obstacleY}`);
     }
   }
 
@@ -695,7 +695,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   frameCount = 0;
   let path = []; // Path for the worm to follow
-  let lastPathCalculationTime = 0; // Variable to track the last time the path was calculated
   function moveWorm(deltaTime) {
     if (!isPaused) {
       playWormMovementSound();
@@ -735,11 +734,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         wormBody[0] = lastHeadPosition; // Update the first segment of the body
 
-        // Check if the worm has reached the apple
-        if (isCollisionWithApple()) {
-          console.log("Collision with Apple Detected");
-          endGame();
-        }
+        // // Check if the worm has reached the apple
+        // if (isCollisionWithApple()) {
+        //   console.log("Collision with Apple Detected");
+        //   endGame();
+        // }
       } else {
         // No valid path found, handle accordingly (recalculate path, stop the worm, etc.)
         console.error("No valid path found!");
@@ -849,7 +848,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function checkCollision() {
     if (!isImmune && isCollisionWithApple() && isImmunityTimeElapsed()) {
-      playAppleCollisionMusic();
+      togglePause();
+
       endGame();
     }
   }
@@ -869,8 +869,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function endGame() {
     wormMovementMusic.pause();
-    playGameOverMusic();
     backgroundMusic.pause();
+    playGameOverMusic();
 
     const btnPlayAgain = document.getElementById("btnPlayAgain");
     const btnMainMenu = document.getElementById("btnMainMenu");
@@ -884,9 +884,10 @@ document.addEventListener("DOMContentLoaded", function () {
     gameOverScore.textContent = currentScore;
     gameOverDifficulty.textContent = difficulty;
     gameOverTime.textContent = timeLength;
+
     setTimeout(() => {
       gameOverModal.show();
-    }, 3000);
+    });
     submitScore(difficulty, currentScore, timeLength);
 
     btnMainMenu.addEventListener("click", function () {
@@ -969,9 +970,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (isImmune && immunityTime % 2 === 0) {
-      ctx.fillStyle = "#FFFF00"; // Blinking color (e.g., yellow)
+      // ctx.fillStyle = "#FFFF00"; // Blinking color (e.g., yellow)
+      ctx.drawImage(
+        yellowAppleSprite,
+        apple.x,
+        apple.y,
+        apple.size,
+        apple.size
+      );
     } else {
-      ctx.drawImage(appleSprite, apple.x, apple.y, apple.size, apple.size);
+      ctx.drawImage(redAppleSprite, apple.x, apple.y, apple.size, apple.size);
       // ctx.fillStyle = "#dc3545"; // Red color for apple
     }
     // ctx.beginPath();
