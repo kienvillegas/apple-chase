@@ -288,7 +288,6 @@ document.addEventListener("DOMContentLoaded", function () {
       // Reset previous error styles and messages
       editUsernameHelp.textContent = "";
       editUsernameHelp.classList.remove("text-danger", "is-invalid");
-
       return false; // Validation succeeded
     }
 
@@ -300,21 +299,37 @@ document.addEventListener("DOMContentLoaded", function () {
       return false; // Validation failed
     }
 
+    // Check if the username contains only allowed characters
+    const validCharactersRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!validCharactersRegex.test(editUsername)) {
+      // Username contains invalid characters, show error and update styles
+      editUsernameHelp.textContent =
+        "Username can only contain letters, numbers, underscores, and hyphens";
+      editUsernameHelp.classList.add("text-danger", "is-invalid");
+      return false; // Validation failed
+    }
+
     // Reset previous error styles and messages
     editUsernameHelp.textContent = "";
     editUsernameHelp.classList.remove("text-danger", "is-invalid");
 
     // Check if the new username is unique
-    const isUnique = await checkUniqueUsername(editUsername);
+    try {
+      const isUnique = await checkUniqueUsername(editUsername);
 
-    if (!isUnique) {
-      // Username is not unique, show error and update styles
-      editUsernameHelp.textContent = "Username is already taken";
-      editUsernameHelp.classList.add("text-danger", "is-invalid");
+      if (!isUnique) {
+        // Username is not unique, show error and update styles
+        editUsernameHelp.textContent = "Username is already taken";
+        editUsernameHelp.classList.add("text-danger", "is-invalid");
+        return false; // Validation failed
+      }
+
+      return true; // Validation succeeded
+    } catch (error) {
+      // Handle the case where there was an error checking uniqueness
+      console.error("Error checking username uniqueness:", error);
       return false; // Validation failed
     }
-
-    return true; // Validation succeeded
   }
 
   // Function to check if the new username is unique
@@ -433,7 +448,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   getAndDisplayVolume();
 
-  // Modify the saveSettings function to check if the username is validated// Modify the saveSettings function to check if the username is validated
   async function saveSettings() {
     const volumeValue = Number(volumeControl.value); // Convert to number without normalizing
     saveVolumeToLocalStorage(volumeValue); // Save to localStorage
@@ -476,6 +490,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     : "Volume setting saved successfully";
 
                 displaySettingsMessage(successMessage, "success");
+                if (isUsernameValid) {
+                  usernamePlaceholder.textContent = editUsername.value;
+                }
               } else {
                 toggleSaveLoading(false);
                 displaySettingsMessage("Error saving settings", "danger");
