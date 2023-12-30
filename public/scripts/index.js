@@ -204,6 +204,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   confirmDeleteBtn.addEventListener("click", function () {
+    // Reset previous error styles
+    confirmDeleteHelp.classList.remove("text-danger", "is-invalid");
+    confirmDeleteHelp.textContent = "";
+
     toggleDeleteLoading(true);
     const confirmationText = "CONFIRM";
 
@@ -932,33 +936,53 @@ document.addEventListener("DOMContentLoaded", function () {
   signUpForm.addEventListener("submit", function (event) {
     playButtonClickSound();
     event.preventDefault();
+
     const newUser = newUsername.value.trim();
     const userPassword = newPassword.value.trim();
     const confirmUserPassword = confirmPassword.value.trim();
+
+    // Reset previous error styles and messages
+    resetHelpMessages();
+    resetErrorMessages();
 
     // Reset previous error styles
     newUsernameHelp.classList.remove("text-danger", "is-invalid");
     newPasswordHelp.classList.remove("text-danger", "is-invalid");
     confirmPasswordHelp.classList.remove("text-danger", "is-invalid");
 
+    // Validate username
     if (newUser.length < 5) {
-      // Username is less than 5 characters, show error and update styles
       newUsernameHelp.textContent =
         "Username must be at least 5 characters long";
       newUsernameHelp.classList.add("text-danger", "is-invalid");
       return;
     }
 
+    // Allow underscore and hyphen, restrict other special characters
+    if (/[^a-zA-Z0-9_-]/.test(newUser)) {
+      newUsernameHelp.textContent =
+        "Username can only contain letters, numbers, underscores, and hyphens";
+      newUsernameHelp.classList.add("text-danger", "is-invalid");
+      return;
+    }
+
+    // Validate password
     if (userPassword.length < 8) {
-      // Password is less than 8 characters, show error and update styles
       newPasswordHelp.textContent =
         "Password must be at least 8 characters long";
       newPasswordHelp.classList.add("text-danger", "is-invalid");
       return;
     }
 
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}/.test(userPassword)) {
+      newPasswordHelp.textContent =
+        "Password must include at least one lowercase letter, one uppercase letter, and one digit.";
+      newPasswordHelp.classList.add("text-danger", "is-invalid");
+      return;
+    }
+
+    // Confirm password match
     if (userPassword !== confirmUserPassword) {
-      // Passwords do not match, show error and update styles
       confirmPasswordHelp.textContent = "Passwords do not match";
       confirmPasswordHelp.classList.add("text-danger", "is-invalid");
       return;
