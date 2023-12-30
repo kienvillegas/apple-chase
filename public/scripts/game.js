@@ -67,6 +67,28 @@ document.addEventListener("DOMContentLoaded", function () {
   const redAppleSprite = document.getElementById("redAppleSprite");
   const yellowAppleSprite = document.getElementById("yellowAppleSprite");
   const obstacleSprite = document.getElementById("obstacleSprite");
+  const btnPlayAgain = document.getElementById("btnPlayAgain");
+  const btnMainMenu = document.getElementById("btnMainMenu");
+
+  function startCountdownTimer(seconds) {
+    let timer = seconds;
+    const countdownElement = document.getElementById("countdownTimer");
+
+    const countdownInterval = setInterval(function () {
+      countdownElement.textContent = timer;
+      timer--;
+
+      if (timer < 0) {
+        clearInterval(countdownInterval);
+        // Do something when the countdown reaches 0, e.g., close the modal
+        const bootstrapModal = new bootstrap.Modal(
+          document.getElementById("gameOverModal")
+        );
+        bootstrapModal.hide();
+        location.href = "/";
+      }
+    }, 1000);
+  }
 
   document.addEventListener("keydown", () => {
     if (!isMuted && !isPaused) {
@@ -212,18 +234,16 @@ document.addEventListener("DOMContentLoaded", function () {
   function adjustRecalculationInterval(difficulty) {
     switch (difficulty) {
       case "easy":
-        recalculationInterval = DEFAULT_RECALCULATION_INTERVAL * 2; // Example: Double the interval for easy
+        recalculationInterval = DEFAULT_RECALCULATION_INTERVAL * 2;
         break;
       case "medium":
-        recalculationInterval = DEFAULT_RECALCULATION_INTERVAL; // Use the default interval for medium
+        recalculationInterval = DEFAULT_RECALCULATION_INTERVAL;
         break;
       case "hard":
-        recalculationInterval = Math.floor(DEFAULT_RECALCULATION_INTERVAL / 2); // Example: Halve the interval for hard
+        recalculationInterval = DEFAULT_RECALCULATION_INTERVAL;
+        // Math.floor(DEFAULT_RECALCULATION_INTERVAL / 2);
         break;
     }
-    console.log(
-      `Recalculation Interval adjusted for ${difficulty} difficulty: ${recalculationInterval}`
-    );
   }
 
   function handleVisibilityChange() {
@@ -256,7 +276,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const gameOverTime = timer;
     const currentScore = score;
 
-    submitScore(difficulty, currentScore, gameOverTime);
+    if (getRoleFromUrl === "registered")
+      submitScore(difficulty, currentScore, gameOverTime);
+
     exitConfirmationModal.hide();
     window.location.href = "/";
   }
@@ -629,10 +651,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     frameCount++;
 
-    if (frameCount % recalculationInterval === 0) {
-      // Recalculate the path at the adjusted interval
-      path = calculatePath(worm, apple, obstacles);
-    }
+    // if (frameCount % recalculationInterval === 0) {
+    //   // Recalculate the path at the adjusted interval
+    //   path = calculatePath(worm, apple, obstacles);
+    // }
 
     if (isImmunityTimeElapsed()) {
       if (path.length === 0) {
@@ -670,9 +692,9 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("Get Difficulty: " + difficulty);
     switch (difficulty) {
       case "easy":
-        return 0.5; // Example: Lower multiplier for easy difficulty
+        return 1; // Example: Lower multiplier for easy difficulty
       case "medium":
-        return 1; // Use the default multiplier for medium difficulty
+        return 1.25; // Use the default multiplier for medium difficulty
       case "hard":
         return 1.5; // Example: Higher multiplier for hard difficulty
       // Add more cases as needed
@@ -681,7 +703,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   frameCount = 0;
   let path = []; // Path for the worm to follow
+
   function moveWorm(deltaTime) {
+    let difficulty = getQueryParam();
     if (!isPaused) {
       playWormMovementSound();
       // Only move the worm if the game is not paused
@@ -689,8 +713,10 @@ document.addEventListener("DOMContentLoaded", function () {
       const lastHeadPosition = { x: worm.x, y: worm.y };
 
       if (path.length > 0) {
+        const speedMultiplier = getDifficultyMultiplier(difficulty);
+        const speed = worm.speed * speedMultiplier; // Adjust speed based on difficulty
+        console.log(speed);
         // Move the worm along the path at a variable speed
-        const speed = worm.speed; // Use the worm's speed
         const dx = path[0].x - worm.x;
         const dy = path[0].y - worm.y;
 
@@ -720,7 +746,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         wormBody[0] = lastHeadPosition; // Update the first segment of the body
 
-        // // Check if the worm has reached the apple
+        // Check if the worm has reached the apple
         // if (isCollisionWithApple()) {
         //   console.log("Collision with Apple Detected");
         //   endGame();
@@ -850,14 +876,12 @@ document.addEventListener("DOMContentLoaded", function () {
   function isImmunityTimeElapsed() {
     return immunityTime === 0;
   }
-
   function endGame() {
+    togglePause();
     wormMovementMusic.pause();
     backgroundMusic.pause();
     playGameOverMusic();
 
-    const btnPlayAgain = document.getElementById("btnPlayAgain");
-    const btnMainMenu = document.getElementById("btnMainMenu");
     const gameOverScore = document.getElementById("gameOverScore");
     const gameOverDifficulty = document.getElementById("gameOverDifficulty");
     const gameOverTime = document.getElementById("gameOverTime");
@@ -867,23 +891,69 @@ document.addEventListener("DOMContentLoaded", function () {
 
     gameOverScore.textContent = currentScore;
     gameOverDifficulty.textContent = difficulty;
-    gameOverTime.textContent = timeLength;
 
-    setTimeout(() => {
-      gameOverModal.show();
-    });
-    submitScore(difficulty, currentScore, timeLength);
+    // Format the time as "00:00"
+    const formattedTime = formatTime(timeLength);
+    gameOverTime.textContent = formattedTime;
 
-    btnMainMenu.addEventListener("click", function () {
-      playClickSound();
-      gameOverModal.hide();
-      window.location.href = "/";
-    });
+    gameOverModal.show();
+    startCountdownTimer(10);
 
-    btnPlayAgain.addEventListener("click", function () {
-      location.reload();
-    });
+    if (getRoleFromUrl === "registered")
+      submitScore(difficulty, currentScore, timeLength);
+
+    btnPause.disabled = true;
+    btnMute.disabled = true;
+    btnExit.disabled = true;
+
+    apple = null;
+    worm = null;
+    wormBody = [];
+    obstacles = [];
+    immunityTime = IMMUNITY_TIME;
+    isImmune = true;
+    currentTime = 0;
+    isGameOver = false;
+    isPaused = false;
+    displayStatusText = false;
+    score = 0;
+    lastScoreUpdateTime = 0;
+    isMuted = false;
+
+    clearInterval(timer);
+    clearInterval(recalculationInterval);
+
+    wormSprites.top = [];
+    wormSprites.left = [];
+    wormSprites.down = [];
+    wormSprites.right = [];
   }
+
+  // Function to format time as "00:00"
+  function formatTime(timeInSeconds) {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
+
+    const formattedHours = padZero(hours);
+    const formattedMinutes = padZero(minutes);
+    const formattedSeconds = padZero(seconds);
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  }
+  btnMainMenu.addEventListener("click", function () {
+    playClickSound();
+    gameOverModal.hide();
+    window.location.href = "/";
+  });
+
+  btnPlayAgain.addEventListener("click", function () {
+    btnPause.disabled = true;
+    btnMute.disabled = true;
+    btnExit.disabled = true;
+
+    location.reload();
+  });
 
   function submitScore(difficulty, score, timeLength) {
     const userRole = getRoleFromUrl();

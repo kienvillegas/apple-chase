@@ -181,22 +181,15 @@
         <div class="modal-content bg-dark text-light">
           <div class="modal-header">
             <h5 class="modal-title" id="gameOverModalTitle">Game Over</h5>
-            <button
-              type="button"
-              class="close text-light"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
           </div>
           <div class="modal-body">
+            <p>Game Over! Your score is <span id="gameOverScore"></span>.</p>
+            <p>Difficulty: <span id="gameOverDifficulty"></span></p>
+            <p>Time: <span id="gameOverTime"></span></p>
+            <!-- Countdown timer element -->
             <p>
-              Game Over! Your score is <span id="gameOverScore"></span>.
-              <br />
-              Difficulty: <span id="gameOverDifficulty"></span>
-              <br />
-              Time: <span id="gameOverTime"></span>
+              Returning to Main Menu in
+              <span id="countdownTimer">10</span> seconds...
             </p>
           </div>
           <div class="modal-footer">
