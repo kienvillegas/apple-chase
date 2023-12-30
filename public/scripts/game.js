@@ -202,11 +202,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function resetVolume() {
-    clickMusic.volume = 100;
-    tapMusic.volume = 100;
-    wormMovementMusic.volume = 100;
-    collisionMusic.volume = 100;
-    gameOverMusic.volume = 100;
+    clickMusic.volume = 100 / 100;
+    tapMusic.volume = 100 / 100;
+    wormMovementMusic.volume = 100 / 100;
+    collisionMusic.volume = 100 / 100;
+    gameOverMusic.volume = 100 / 100;
   }
 
   function adjustRecalculationInterval(difficulty) {
@@ -241,7 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function exit() {
     playClickSound();
-    togglePause();
 
     exitConfirmationModal.show();
   }
@@ -546,8 +545,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     return false; // No collision
   }
-
-  // Inside the handleKeyPress function
   function handleKeyPress(event) {
     playTapSound();
     // Arrow key codes: 37 (left), 38 (up), 39 (right), 40 (down)
@@ -569,29 +566,18 @@ document.addEventListener("DOMContentLoaded", function () {
       case 83: // "s"
         moveApple(0, OBSTACLE_SIZE);
         break;
+      case 77: // "m" - Mute shortcut key
+        toggleMute();
+        break;
+      case 27: // Escape key - Exit shortcut key
+        exit();
+        break;
       case 80: // "p" - Pause shortcut key
         togglePause();
         break;
     }
-
-    // Wrap around the canvas after updating the apple's position
-    // wrapAroundCanvas(apple);
   }
 
-  function wrapAroundCanvas(object) {
-    // Wrap the object around the canvas if it goes beyond the boundaries
-    if (object.x < 0) {
-      object.x = canvas.width - object.size;
-    } else if (object.x + object.size > canvas.width) {
-      object.x = 0;
-    }
-
-    if (object.y < 0) {
-      object.y = canvas.height - object.size;
-    } else if (object.y + object.size > canvas.height) {
-      object.y = 0;
-    }
-  }
   function moveApple(dx, dy) {
     // Move the apple, checking for collisions with obstacles
     let newAppleX = apple.x + dx;
@@ -848,8 +834,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function checkCollision() {
     if (!isImmune && isCollisionWithApple() && isImmunityTimeElapsed()) {
-      togglePause();
-
       endGame();
     }
   }
