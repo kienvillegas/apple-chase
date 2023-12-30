@@ -991,9 +991,13 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}/.test(userPassword)) {
+    if (
+      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}/.test(
+        userPassword
+      )
+    ) {
       newPasswordHelp.textContent =
-        "Password must include at least one lowercase letter, one uppercase letter, and one digit.";
+        "Your password should contain: one lowercase letter, one uppercase letter, one digit, and one special character.";
       newPasswordHelp.classList.add("text-danger", "is-invalid");
       return;
     }
