@@ -93,8 +93,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.addEventListener("click", function clickHandler() {
-    checkLoggedIn();
     playBackgroundMusic();
+
+    checkLoggedIn();
     document.removeEventListener("click", clickHandler);
   });
 
@@ -166,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   btnInstructions.addEventListener("click", function () {
+    playButtonClickSound();
     instructionsModal.show();
     showSlide(currentSlideIndex); // Show the initial slide when the modal is opened  });
   });
@@ -174,6 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("showPasswordSignIn")
     .addEventListener("click", function () {
+      playButtonClickSound();
       togglePasswordVisibility("passwordSignIn", "showPasswordSignIn");
     });
 
@@ -181,12 +184,14 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("showPasswordSignUp")
     .addEventListener("click", function () {
+      playButtonClickSound();
       togglePasswordVisibility("newPassword", "showPasswordSignUp");
     });
 
   document
     .getElementById("showConfirmPasswordSignUp")
     .addEventListener("click", function () {
+      playButtonClickSound();
       togglePasswordVisibility("confirmPassword", "showConfirmPasswordSignUp");
     });
 
@@ -265,6 +270,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  closeSettings.addEventListener("click", function () {
+    playButtonClickSound();
+  });
+
   // Function to validate the editUsername
   async function validateUsername() {
     const editUsername = document.getElementById("editUsername").value.trim();
@@ -329,11 +338,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   btnPrevSlide.addEventListener("click", function () {
+    playButtonClickSound();
     currentSlideIndex--;
     showSlide(currentSlideIndex);
   });
 
   btnNextSlide.addEventListener("click", function () {
+    playButtonClickSound();
     currentSlideIndex++;
     showSlide(currentSlideIndex);
   });
@@ -896,6 +907,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .catch((error) => console.error(`Error during ${method}:`, error));
   }
   signInForm.addEventListener("submit", function (event) {
+    playButtonClickSound();
     event.preventDefault();
     const username = usernameSignIn.value.trim();
     const password = passwordSignIn.value.trim();
@@ -918,7 +930,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   signUpForm.addEventListener("submit", function (event) {
-    console.log("Clicked");
+    playButtonClickSound();
     event.preventDefault();
     const newUser = newUsername.value.trim();
     const userPassword = newPassword.value.trim();

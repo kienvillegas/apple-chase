@@ -66,6 +66,10 @@ nav {
   text-align: center;
 }
 
+.navbar-nav a {
+  margin-right: 15px;
+}
+
 nav a {
   color: #fff;
   text-decoration: none;
@@ -81,6 +85,12 @@ nav a:hover {
 
 nav {
   z-index: 1000; /* Set a high z-index to ensure the navigation bar is on top */
+}
+
+@media (max-width: 768px) {
+  .navbar-nav {
+    margin-top: 10px;
+  }
 }
 
 .table-highlight {
