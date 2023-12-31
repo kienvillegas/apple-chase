@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const gameOverTime = timer;
     const currentScore = score;
 
-    if (getRoleFromUrl === "registered")
+    if (getRoleFromUrl() === "registered")
       submitScore(difficulty, currentScore, gameOverTime);
 
     exitConfirmationModal.hide();
@@ -889,6 +889,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const timeLength = timer;
     const currentScore = score;
 
+    if (getRoleFromUrl() === "registered") {
+      submitScore(difficulty, currentScore, timeLength);
+      console.log("Submitting Score successful");
+    }
     gameOverScore.textContent = currentScore;
     gameOverDifficulty.textContent = difficulty;
 
@@ -898,9 +902,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     gameOverModal.show();
     startCountdownTimer(10);
-
-    if (getRoleFromUrl === "registered")
-      submitScore(difficulty, currentScore, timeLength);
 
     btnPause.disabled = true;
     btnMute.disabled = true;
