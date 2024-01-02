@@ -1,0 +1,6 @@
+[build]
+  command = "npm run build"  # Adjust the build command based on your project setup
+  functions = "functions"
+
+[dev]
+  functions = "functions"
