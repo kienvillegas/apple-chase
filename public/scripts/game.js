@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const OBSTACLE_SIZE = 30;
   const NUM_OBSTACLES = 200;
   const IMMUNITY_TIME = 10;
-  const DEFAULT_WORM_SPEED = 50;
+  const DEFAULT_WORM_SPEED = 70;
   const DEFAULT_RECALCULATION_INTERVAL = 120;
   const SCORE_UPDATE_INTERVAL = 1;
 
@@ -860,7 +860,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function checkCollision() {
     if (!isImmune && isCollisionWithApple() && isImmunityTimeElapsed()) {
-      endGame();
+      setTimeout(() => {
+        endGame();
+      }, 200);
     }
   }
 
@@ -877,7 +879,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return immunityTime === 0;
   }
   function endGame() {
-    togglePause();
     wormMovementMusic.pause();
     backgroundMusic.pause();
     playGameOverMusic();
